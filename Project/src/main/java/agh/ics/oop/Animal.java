@@ -143,8 +143,8 @@ public class Animal implements WorldElement{
                 genType.add(this.genType.get(i));
             }
         }
-
-        return new Animal(this.position, this.orientation, this.energy/4 + parent2.energy/4, genType);
+        ArrayList<Integer> newGenType = mutationSwap(genType, 1);
+        return new Animal(this.position, this.orientation, this.energy/4 + parent2.energy/4, newGenType); //tutaj trzeba poprawić potem jeszcze tą ilość energii
     }
 
 
