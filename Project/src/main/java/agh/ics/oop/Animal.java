@@ -114,7 +114,7 @@ public class Animal implements WorldElement{
         this.children -= 1;
     }
 
-    public Animal reproduce(Animal parent2){ //parent2 jest zawsze słabszy od this
+    public Animal reproduce(Animal parent2){ //parent2 jest zawsze słabszy od this TRZEBA DODAĆ ILE ENERGII DOSTAJE DZIECKO I TRACA RODZICE
         ArrayList<Integer> genType = new ArrayList<>();
 
         int sumOfEnergy = this.energy + parent2.energy;

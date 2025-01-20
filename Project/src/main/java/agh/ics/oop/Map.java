@@ -72,7 +72,82 @@ public class Map implements WorldMap{
         return new Boundary (new Vector2d(0,0), new Vector2d(this.width,this.height));
     }
 
-    public void move(Animal animal, int direction){
+    public boolean areThereAnimals(Vector2d position){
+        return animals.containsKey(position);
+    }
 
+    public void move(Animal animal, int direction){
+        Vector2d oldPosition = animal.getPosition();
+        Vector2d newPosition = oldPosition.add(MapDirection.values()[direction].toUnitVector());
+        MoveValidator moveValidator = new MoveValidator(this);
+        if (canMoveTo(newPosition)){
+            animal.move(direction, );
+            animals.get(oldPosition).remove(animal);
+            if (animals.get(oldPosition).isEmpty()){
+                animals.remove(oldPosition);
+            }
+            if (animals.containsKey(newPosition)){
+                animals.get(newPosition).add(animal);
+            }
+            else{
+                animals.put(newPosition, new ArrayList<>(List.of(animal)));
+            }
+        }
+    }
+
+    public void reproduction() {
+        for (List<Animal> animalList : animals.values()) {
+            if (animalList.size() >= 2) {
+                List<Animal> winners = decideWhoWins(animalList);
+                Animal parent1 = winners.get(0);
+                Animal parent2 = winners.get(1);
+                Animal child;
+                if (parent1.getEnergy()>=parent2.getEnergy()){
+                    child = parent1.reproduce(parent2);
+                }
+                else{
+                    child = parent2.reproduce(parent1);
+                }
+
+                placeAnimal(child);
+            }
+        }
+    }
+
+    public Animal resolveConflict(List<Animal> animals) { //wyznacza zwycięzcę konfliktu wedlug zasad
+        if (animals.isEmpty()) {
+            return null;
+        }
+
+        animals.sort(Comparator.comparingInt(Animal::getEnergy).reversed()
+                .thenComparingInt(Animal::getAge).reversed()
+                .thenComparingInt(Animal::getChildren).reversed());
+
+        List<Animal> topAnimals = new ArrayList<>();
+        int maxEnergy = animals.getFirst().getEnergy();
+        int maxAge = animals.getFirst().getAge();
+        int maxChildren = animals.getFirst().getChildren();
+
+        for (Animal animal : animals) {
+            if (animal.getEnergy() == maxEnergy && animal.getAge() == maxAge && animal.getChildren() == maxChildren) {
+                topAnimals.add(animal);
+            } else {
+                break;
+            }
+        }
+
+        if (topAnimals.size() == 1) {
+            return topAnimals.getFirst();
+        } else {
+            Random random = new Random();
+            return topAnimals.get(random.nextInt(topAnimals.size()));
+        }
+    }
+
+    public List<Animal> decideWhoWins(List<Animal> animals){ //daje liste zwyciezcow konfliktu, mozna wykorzystac przy jedzeniu też (ten najlepszy to zawsze zerowy indeks)
+        Animal winner1 = resolveConflict(animals);
+        animals.remove(winner1);
+        Animal winner2 = resolveConflict(animals);
+        return List.of(winner1, winner2);
     }
 }
