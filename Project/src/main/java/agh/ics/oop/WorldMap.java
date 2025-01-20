@@ -10,4 +10,6 @@ public interface WorldMap extends MoveValidator {
     List<WorldElement> getElements();
 
     Boundary getCurrentBounds();
+
+    boolean isOccupied(Vector2d currentPosition);
 }
