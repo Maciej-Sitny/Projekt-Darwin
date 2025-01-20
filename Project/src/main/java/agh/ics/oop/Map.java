@@ -77,22 +77,7 @@ public class Map implements WorldMap{
     }
 
     public void move(Animal animal, int direction){
-        Vector2d oldPosition = animal.getPosition();
-        Vector2d newPosition = oldPosition.add(MapDirection.values()[direction].toUnitVector());
-        MoveValidator moveValidator = new MoveValidator(this);
-        if (canMoveTo(newPosition)){
-            animal.move(direction, );
-            animals.get(oldPosition).remove(animal);
-            if (animals.get(oldPosition).isEmpty()){
-                animals.remove(oldPosition);
-            }
-            if (animals.containsKey(newPosition)){
-                animals.get(newPosition).add(animal);
-            }
-            else{
-                animals.put(newPosition, new ArrayList<>(List.of(animal)));
-            }
-        }
+
     }
 
     public void reproduction() {
