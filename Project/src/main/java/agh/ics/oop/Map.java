@@ -26,7 +26,8 @@ public class Map implements WorldMap{
     }
 
     public void placeAnimal(Animal animal) {
-        animals.get(animal.getPosition()).add(animal);
+        Vector2d position = animal.getPosition();
+        animals.computeIfAbsent(position, k -> new ArrayList<>()).add(animal);
     }
 
     public void growPlant(int amount) {
@@ -79,8 +80,22 @@ public class Map implements WorldMap{
         return animals.containsKey(position);
     }
 
-    public void move(Animal animal, int direction){
+    public void move(Animal animal, int direction) {
 
+        Vector2d currentPosition = animal.getPosition();
+
+        List<Animal> animalList = animals.get(currentPosition);
+        if (animalList != null) {
+            animalList.remove(animal);
+
+            if (animalList.isEmpty()) {
+                animals.remove(currentPosition);
+            }
+        }
+
+        animal.move(direction,this);
+        Vector2d newPosition = animal.getPosition();
+        animals.computeIfAbsent(newPosition, k -> new ArrayList<>()).add(animal);
     }
 
     public void reproduction() {
@@ -138,4 +153,33 @@ public class Map implements WorldMap{
         Animal winner2 = resolveConflict(animals);
         return List.of(winner1, winner2);
     }
+
+    public void consume(int energy) {
+        for (Vector2d position : plants.keySet()) {
+            Plant plant = plants.get(position);
+            List<Animal> animalList = animals.get(position);
+
+            if (animalList != null && !animalList.isEmpty()) {
+                Animal chosenAnimal = resolveConflict(animalList);
+                if (chosenAnimal != null) {
+                    chosenAnimal.addEnergy(energy);
+                    plants.remove(position);
+                }
+            }
+        }
+    }
+
+    public void removeDeadAnimal(Animal animal) {
+        Vector2d position = animal.getPosition();
+        List<Animal> animalList = animals.get(position);
+
+        if (animalList != null) {
+            animalList.remove(animal);
+
+            if (animalList.isEmpty()) {
+                animals.remove(position);
+            }
+        }
+    }
+
 }

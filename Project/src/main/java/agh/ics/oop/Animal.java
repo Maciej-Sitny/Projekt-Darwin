@@ -21,7 +21,7 @@ public class Animal implements WorldElement{
         this.genNumber = 0;
     }
 
-    public Animal(Vector2d position, MapDirection direction, int energy, ArrayList<Integer> genType) {
+    public Animal(Vector2d position, int energy, ArrayList<Integer> genType) {
         this.position = position;
         this.orientation = MapDirection.NORTH;
         this.energy = energy;
@@ -51,6 +51,10 @@ public class Animal implements WorldElement{
 
     public ArrayList<Integer> getGenType() {
         return genType;
+    }
+
+    public int getGenNumber(){
+        return this.genNumber;
     }
 
     public void nextGen() {
@@ -144,7 +148,7 @@ public class Animal implements WorldElement{
             }
         }
         ArrayList<Integer> newGenType = mutationSwap(genType, 1);
-        return new Animal(this.position, this.orientation, this.energy/4 + parent2.energy/4, newGenType); //tutaj trzeba poprawić potem jeszcze tą ilość energii
+        return new Animal(this.position, this.energy/4 + parent2.energy/4, newGenType); //tutaj trzeba poprawić potem jeszcze tą ilość energii
     }
 
 
