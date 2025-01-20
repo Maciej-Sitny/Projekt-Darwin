@@ -72,6 +72,9 @@ public class Map implements WorldMap{
         return new Boundary (new Vector2d(0,0), new Vector2d(this.width,this.height));
     }
 
+    public boolean isOccupied(Vector2d position){
+        return animals.containsKey(position);
+    }
     public boolean areThereAnimals(Vector2d position){
         return animals.containsKey(position);
     }
