@@ -4,7 +4,6 @@ import agh.ics.oop.presenter.SimulationPresenter;
 import javafx.application.Platform;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class Simulation implements Runnable {
@@ -38,14 +37,14 @@ public class Simulation implements Runnable {
 
     public void run() {
         while (!this.animals.isEmpty()) {
-            Iterator<Animal> iterator = this.animals.iterator();
-            while (iterator.hasNext()) {
-                Animal animal = iterator.next();
+            List<Animal> deadAnimals = new ArrayList<>();
+            for (Animal animal : this.animals) {
                 if (animal.getEnergy() <= 0) {
+                    deadAnimals.add(animal);
                     this.map.removeDeadAnimal(animal);
-                    iterator.remove();
                 }
             }
+            this.animals.removeAll(deadAnimals);
 
             for (Animal animal : this.animals) {
                 ArrayList<Integer> gens = animal.getGenType();
@@ -63,7 +62,7 @@ public class Simulation implements Runnable {
 
             // Add a delay to visualize the steps
             try {
-                Thread.sleep(500); // 1 second delay
+                Thread.sleep(1000); // 1 second delay
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
