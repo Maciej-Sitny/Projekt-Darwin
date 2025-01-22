@@ -16,6 +16,24 @@ public class SimulationParameters {
     private String mutationVariant;
     private int genomeLength;
 
+    public SimulationParameters(int mapHeight, int mapWidth, String mapVariant, int initialPlants, int energyPerPlant, int plantsPerDay, int initialAnimals, int initialEnergy, int energyToBeFed, int energyUsedByParents, int minMutations, int maxMutations, String mutationVariant, int genomeLength) {
+        this.mapHeight = mapHeight;
+        this.mapWidth = mapWidth;
+        this.mapVariant = mapVariant;
+        this.initialPlants = initialPlants;
+        this.energyPerPlant = energyPerPlant;
+        this.plantsPerDay = plantsPerDay;
+        this.initialAnimals = initialAnimals;
+        this.initialEnergy = initialEnergy;
+        this.energyToBeFed = energyToBeFed;
+        this.energyUsedByParents = energyUsedByParents;
+        this.minMutations = minMutations;
+        this.maxMutations = maxMutations;
+        this.mutationVariant = mutationVariant;
+        this.genomeLength = genomeLength;
+    }
+
+
     public int getMapHeight() {
         return mapHeight;
     }

@@ -1,6 +1,8 @@
 package agh.ics.oop;
 
 import java.util.ArrayList;
+import java.util.Random;
+
 
 public class Animal implements WorldElement{
     private Vector2d position;
@@ -27,6 +29,14 @@ public class Animal implements WorldElement{
         this.energy = energy;
         this.genType = genType;
         this.genNumber = 0;
+    }
+
+    public Animal(Vector2d position, MapDirection orientation, int energy, ArrayList<Integer> genType, int genNumber){ //dodatkowy konstruktor specjalnie pod nowonarodzone dziecko (według opisu projektu dziecko ma losową orientację)
+        this.position = position;
+        this.orientation = orientation;
+        this.energy = energy;
+        this.genType = genType;
+        this.genNumber = genNumber;
     }
 
     public Vector2d getPosition() {
@@ -148,7 +158,8 @@ public class Animal implements WorldElement{
             }
         }
         ArrayList<Integer> newGenType = mutationSwap(genType, 1);
-        return new Animal(this.position, this.energy/4 + parent2.energy/4, newGenType); //tutaj trzeba poprawić potem jeszcze tą ilość energii
+        Random random = new Random();
+        return new Animal(this.position, this.getRandomDirection(), this.energy/4 + parent2.energy/4, newGenType, random.nextInt(8)); //tutaj trzeba poprawić potem jeszcze tą ilość energii
     }
 
 
@@ -191,6 +202,11 @@ public class Animal implements WorldElement{
             newGenType.set(randomIndex2, tmp);
         }
         return newGenType;
+    }
+
+    private MapDirection getRandomDirection() {  // ewentualne błędy mogą wyjść z tego (potrzebuję tego do losowej orientacji zwierzaka przy narodzeniu)
+        MapDirection[] directions = MapDirection.values();
+        return directions[new Random().nextInt(directions.length)];
     }
 }
 

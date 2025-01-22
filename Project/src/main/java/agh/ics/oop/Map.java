@@ -98,7 +98,8 @@ public class Map implements WorldMap{
         animals.computeIfAbsent(newPosition, k -> new ArrayList<>()).add(animal);
     }
 
-    public void reproduction() {
+    public List<Animal> reproduction() {
+        List<Animal> newAnimalsList = new ArrayList<>();
         for (List<Animal> animalList : animals.values()) {
             if (animalList.size() >= 2) {
                 List<Animal> winners = decideWhoWins(animalList);
@@ -107,14 +108,17 @@ public class Map implements WorldMap{
                 Animal child;
                 if (parent1.getEnergy()>=parent2.getEnergy()){
                     child = parent1.reproduce(parent2);
+
                 }
                 else{
                     child = parent2.reproduce(parent1);
                 }
 
-                placeAnimal(child);
+                this.placeAnimal(child);
+                newAnimalsList.add(child);
             }
         }
+        return newAnimalsList;
     }
 
     public Animal resolveConflict(List<Animal> animals) { //wyznacza zwycięzcę konfliktu wedlug zasad
@@ -182,4 +186,7 @@ public class Map implements WorldMap{
         }
     }
 
+    public List<Vector2d> getPlantsPositions(){
+        return plants.values().stream().map(Plant::getPosition).toList();
+    }
 }
