@@ -17,7 +17,7 @@ public interface WorldMap extends MoveValidator {
 
     void removeDeadAnimal(Animal animal);
 
-    void reproduction();
+    List<Animal> reproduction();
 
     void growPlant(int amount);
 }

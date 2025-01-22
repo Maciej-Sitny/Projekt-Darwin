@@ -48,9 +48,8 @@ public class Simulation implements Runnable {
 
             this.map.consume(this.plantEnergy);
 
-            //this.map.reproduction();
-            // tutaj musisz jakoś to zrobić by to się wykonało dla każdego pola na mapie i dodało
-            //wszystkie zwierzaki tutaj do animals TUTAJ, bo inaczej nigdy nie wejdą do symulacji
+            List<Animal> children=this.map.reproduction();
+            this.animals.addAll(children);
 
             this.map.growPlant(this.growNumber);
 

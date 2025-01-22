@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 
 public class SimulationPresenter extends Application {
 
-    private SimulationParameters parameters = new SimulationParameters();
+    private SimulationParameters parameters;
 
     @Override
     public void start(Stage primaryStage) {
@@ -92,21 +92,20 @@ public class SimulationPresenter extends Application {
         // Submit button
         Button submitButton = new Button("OK");
         submitButton.setOnAction(e -> {
-            parameters.setMapHeight(Integer.parseInt(mapHeight.getText()));
-            parameters.setMapWidth(Integer.parseInt(mapWidth.getText()));
-            parameters.setMapVariant(mapVariant.getValue());
-            parameters.setInitialPlants(Integer.parseInt(initialPlants.getText()));
-            parameters.setEnergyPerPlant(Integer.parseInt(energyPerPlant.getText()));
-            parameters.setPlantsPerDay(Integer.parseInt(plantsPerDay.getText()));
-            parameters.setInitialAnimals(Integer.parseInt(initialAnimals.getText()));
-            parameters.setInitialEnergy(Integer.parseInt(initialEnergy.getText()));
-            parameters.setEnergyToBeFed(Integer.parseInt(energyToBeFed.getText()));
-            parameters.setEnergyUsedByParents(Integer.parseInt(energyUsedByParents.getText()));
-            parameters.setMinMutations(Integer.parseInt(minMutations.getText()));
-            parameters.setMaxMutations(Integer.parseInt(maxMutations.getText()));
-            parameters.setMutationVariant(mutationVariant.getValue());
-            parameters.setGenomeLength(Integer.parseInt(genomeLength.getText()));
-            // Use parameters in other classes as needed
+            parameters=new SimulationParameters(Integer.parseInt(mapHeight.getText()),
+                    Integer.parseInt(mapWidth.getText()),
+                    mapVariant.getValue(),
+                    Integer.parseInt(initialPlants.getText()),
+                    Integer.parseInt(energyPerPlant.getText()),
+                    Integer.parseInt(plantsPerDay.getText()),
+                    Integer.parseInt(initialAnimals.getText()),
+                    Integer.parseInt(initialEnergy.getText()),
+                    Integer.parseInt(energyToBeFed.getText()),
+                    Integer.parseInt(energyUsedByParents.getText()),
+                    Integer.parseInt(minMutations.getText()),
+                    Integer.parseInt(maxMutations.getText()),
+                    mutationVariant.getValue(),
+                    Integer.parseInt(genomeLength.getText()));
         });
         grid.add(submitButton, 1, 16);
 
