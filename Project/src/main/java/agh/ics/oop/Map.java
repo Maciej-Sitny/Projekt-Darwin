@@ -112,7 +112,7 @@ public class Map implements WorldMap{
                     child = parent2.reproduce(parent1);
                 }
 
-                placeAnimal(child);
+                this.placeAnimal(child);
             }
         }
     }
