@@ -11,5 +11,13 @@ public interface WorldMap extends MoveValidator {
 
     Boundary getCurrentBounds();
 
+    void consume(int energy);
+
     boolean isOccupied(Vector2d currentPosition);
+
+    void removeDeadAnimal(Animal animal);
+
+    void reproduction();
+
+    void growPlant(int amount);
 }
