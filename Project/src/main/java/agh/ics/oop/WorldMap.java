@@ -20,4 +20,6 @@ public interface WorldMap extends MoveValidator {
     List<Animal> reproduction();
 
     void growPlant(int amount);
+
+    public List<Vector2d> getPlantsPositions();
 }

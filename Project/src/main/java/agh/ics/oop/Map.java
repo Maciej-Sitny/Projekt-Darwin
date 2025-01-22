@@ -186,4 +186,7 @@ public class Map implements WorldMap{
         }
     }
 
+    public List<Vector2d> getPlantsPositions(){
+        return plants.values().stream().map(Plant::getPosition).toList();
+    }
 }
