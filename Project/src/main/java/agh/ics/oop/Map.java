@@ -27,7 +27,7 @@ public class Map implements WorldMap {
     }
 
     public boolean canMoveTo(Vector2d position) {
-        if (position.getY() < 0 || position.getY() > this.height) {
+        if (position.getY() < 0 || position.getY() >= this.height) {
             return false;
         } else {
             return true;
@@ -224,6 +224,7 @@ public class Map implements WorldMap {
                 Animal chosenAnimal = resolveConflict(animalList);
                 if (chosenAnimal != null) {
                     chosenAnimal.addEnergy(this.energyPerPlant);
+                    chosenAnimal.eatPlant();
                     iterator.remove(); // Bezpieczne usunięcie rośliny
                 }
             }

@@ -3,7 +3,6 @@ package agh.ics.oop;
 public class SimulationParameters {
     private int mapHeight;
     private int mapWidth;
-    private String mapVariant;
     private int initialPlants;
     private int energyPerPlant;
     private int plantsPerDay;
@@ -15,11 +14,12 @@ public class SimulationParameters {
     private int maxMutations;
     private String mutationVariant;
     private int genomeLength;
+    private int energyLost;
+    private int poleDistance;
 
-    public SimulationParameters(int mapHeight, int mapWidth, String mapVariant, int initialPlants, int energyPerPlant, int plantsPerDay, int initialAnimals, int initialEnergy, int energyToBeFed, int energyUsedByParents, int minMutations, int maxMutations, String mutationVariant, int genomeLength) {
+    public SimulationParameters(int mapHeight, int mapWidth, int initialPlants, int energyPerPlant, int plantsPerDay, int initialAnimals, int initialEnergy, int energyToBeFed, int energyUsedByParents, int minMutations, int maxMutations, String mutationVariant, int genomeLength, int energyLost, int poleDistance) {
         this.mapHeight = mapHeight;
         this.mapWidth = mapWidth;
-        this.mapVariant = mapVariant;
         this.initialPlants = initialPlants;
         this.energyPerPlant = energyPerPlant;
         this.plantsPerDay = plantsPerDay;
@@ -31,6 +31,8 @@ public class SimulationParameters {
         this.maxMutations = maxMutations;
         this.mutationVariant = mutationVariant;
         this.genomeLength = genomeLength;
+        this.energyLost = energyLost;
+        this.poleDistance = poleDistance;
     }
 
 
@@ -45,12 +47,6 @@ public class SimulationParameters {
     }
     public void setMapWidth(int mapWidth) {
         this.mapWidth = mapWidth;
-    }
-    public String getMapVariant() {
-        return mapVariant;
-    }
-    public void setMapVariant(String mapVariant) {
-        this.mapVariant = mapVariant;
     }
     public int getInitialPlants() {
         return initialPlants;
@@ -117,5 +113,17 @@ public class SimulationParameters {
     }
     public void setGenomeLength(int genomeLength) {
         this.genomeLength = genomeLength;
+    }
+    public int getEnergyLost() {
+        return energyLost;
+    }
+    public void setEnergyLost(int energyLost) {
+        this.energyLost = energyLost;
+    }
+    public int getPoleDistance() {
+        return poleDistance;
+    }
+    public void setPoleDistance(int poleDistance) {
+        this.poleDistance = poleDistance;
     }
 }

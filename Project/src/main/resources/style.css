@@ -1,0 +1,7 @@
+.cell {
+    -fx-fill: green;
+}
+
+.cell:hover {
+    -fx-fill: lightgreen;
+}
