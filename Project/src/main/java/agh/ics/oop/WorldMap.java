@@ -1,6 +1,7 @@
 package agh.ics.oop;
 
 import java.util.List;
+import java.util.Set;
 
 public interface WorldMap extends MoveValidator {
     void placeAnimal(Animal animal);
@@ -21,5 +22,7 @@ public interface WorldMap extends MoveValidator {
 
     void growPlant(int amount);
 
-    public List<Vector2d> getPlantsPositions();
+    Set<Vector2d> getPlantsPositions();
+    Set<Vector2d> findPlaceForPlants();
+    int getPlantCount();
 }

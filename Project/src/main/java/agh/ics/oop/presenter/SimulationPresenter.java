@@ -122,6 +122,7 @@ public class SimulationPresenter extends Application {
                     Integer.parseInt(maxMutations.getText()),
                     mutationVariant.getValue(),
                     Integer.parseInt(genomeLength.getText()));
+            parameters = new SimulationParameters(10,10,"Kula ziemska",10,10,3,3,100,1000,1000,2,7,"Podmianka",9);
             initializeSimulation();
             new Thread(() -> {
                 simulation.run();

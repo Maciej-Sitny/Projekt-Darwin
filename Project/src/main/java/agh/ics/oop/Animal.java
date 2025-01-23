@@ -168,6 +168,9 @@ public class Animal implements WorldElement{
         else if (parameters.getMutationVariant()=="Podmianka"){
             newGenType = mutationSwap(genType);
         }
+        this.removeEnergy(this.parameters.getEnergyUsedByParents());
+        parent2.removeEnergy(this.parameters.getEnergyUsedByParents());
+
         return new Animal(this.position, this.getRandomDirection(), 2*this.parameters.getEnergyUsedByParents(), newGenType, random.nextInt(8), parameters); //tutaj trzeba poprawić potem jeszcze tą ilość energii
     }
 
