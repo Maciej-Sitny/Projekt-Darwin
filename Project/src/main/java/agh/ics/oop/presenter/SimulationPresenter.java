@@ -2,6 +2,7 @@ package agh.ics.oop.presenter;
 
 import agh.ics.oop.*;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -11,6 +12,7 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SimulationPresenter extends Application {
 
@@ -93,8 +95,14 @@ public class SimulationPresenter extends Application {
         grid.add(mutationVariant, 1, 13);
 
         // Length of animal genome
-        grid.add(new Label("Długość genomu"), 0, 14);
+        grid.add(new Label("Długość genomu (>=4)"), 0, 14);
         TextField genomeLength = new TextField();
+        genomeLength.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*") && (change.getControlNewText().isEmpty() || Integer.parseInt(change.getControlNewText()) >= 4)) {
+                return change;
+            }
+            return null;
+        }));
         grid.add(genomeLength, 1, 14);
 
         // Submit button
@@ -115,8 +123,12 @@ public class SimulationPresenter extends Application {
                     mutationVariant.getValue(),
                     Integer.parseInt(genomeLength.getText()));
             initializeSimulation();
-            drawMap();
-            new Thread(simulation).start(); // Start the simulation in a new thread
+            new Thread(() -> {
+                simulation.run();
+                Platform.runLater(() -> {
+                    drawMap();
+                });
+            }).start();
         });
         grid.add(submitButton, 1, 16);
 
@@ -128,15 +140,14 @@ public class SimulationPresenter extends Application {
 
     private void initializeSimulation() {
         List<Vector2d> positions = new ArrayList<>();
+        Random random = new Random();
         for (int i = 0; i < parameters.getInitialAnimals(); i++) {
-            positions.add(new Vector2d((int) (Math.random() * parameters.getMapWidth()), (int) (Math.random() * parameters.getMapHeight())));
+            positions.add(new Vector2d(random.nextInt(parameters.getMapWidth()+1), random.nextInt(parameters.getMapHeight()+1)));
         }
-        WorldMap map = new Map(parameters.getMapHeight(), parameters.getMapWidth());
+        WorldMap map = new Map(parameters);
 
-        for (int i = 0; i < parameters.getInitialPlants(); i++) {
-            map.growPlant(1);
-        }
-        simulation = new Simulation(positions, map, parameters.getInitialEnergy(), parameters.getGenomeLength(), parameters.getEnergyPerPlant(), parameters.getPlantsPerDay(), this);
+        map.growPlant(parameters.getInitialPlants());
+        simulation = new Simulation(positions, map, parameters.getInitialEnergy(), parameters.getGenomeLength(), parameters.getEnergyPerPlant(), parameters.getPlantsPerDay(), this, parameters);
     }
 
     public void drawMap() {
@@ -155,20 +166,22 @@ public class SimulationPresenter extends Application {
             }
         }
 
-        // Display animals
-        for (Animal animal : simulation.getAnimals()) {
-            Vector2d position = animal.getPosition();
-            Pane cell = (Pane) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
-            if (cell != null) {
-                cell.setStyle("-fx-background-color: red; -fx-border-color: black; -fx-border-width: 1;"); // Set background color to red for cells with animals and border color to black
-            }
-        }
+
 
         // Display plants
         for (Vector2d plantPosition : simulation.getMap().getPlantsPositions()) {
             Pane cell = (Pane) getNodeByRowColumnIndex(plantPosition.getY(), plantPosition.getX(), mapGrid);
             if (cell != null) {
                 cell.setStyle("-fx-background-color: yellow; -fx-border-color: black; -fx-border-width: 1;"); // Set background color to yellow for cells with plants and border color to black
+            }
+        }
+
+        // Display animals
+        for (Animal animal : simulation.getAnimals()) {
+            Vector2d position = animal.getPosition();
+            Pane cell = (Pane) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
+            if (cell != null) {
+                cell.setStyle("-fx-background-color: red; -fx-border-color: black; -fx-border-width: 1;"); // Set background color to red for cells with animals and border color to black
             }
         }
 

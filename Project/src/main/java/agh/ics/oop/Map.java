@@ -3,17 +3,25 @@ package agh.ics.oop;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Map implements WorldMap{
+public class Map implements WorldMap  {
     protected java.util.Map<Vector2d, List<Animal> > animals = new HashMap<>();
     protected java.util.Map<Vector2d, Plant> plants = new HashMap<>();
     private int width;
     private int height;
     private int equatorWidth;
+    private int energyPerPlant;
+    private int plantsPerDay;
+    private int energyToBeFed;
 
-    public Map(int width, int heigth) {
-        this.width = width;
-        this.height = heigth;
-        this.equatorWidth = (int) (heigth * 20 / 100);
+
+    public Map(SimulationParameters parameters) {
+
+        this.width = parameters.getMapWidth();
+        this.height = parameters.getMapHeight();
+        this.equatorWidth = (int) (parameters.getMapHeight() * 20 / 100);
+        this.energyPerPlant = parameters.getEnergyPerPlant(); // użyte
+        this.plantsPerDay = parameters.getPlantsPerDay(); //użyte
+        this.energyToBeFed = parameters.getEnergyToBeFed(); //użyte
     }
 
     public boolean canMoveTo(Vector2d position){
@@ -33,6 +41,7 @@ public class Map implements WorldMap{
     public void growPlant(int amount) {
         Random random = new Random();
         int cnt = 0;
+
         while (cnt != amount) {
             int tmp = random.nextInt(5) + 1;
             if (tmp % 5 < 4){
@@ -121,7 +130,13 @@ public class Map implements WorldMap{
         return newAnimalsList;
     }
 
-    public Animal resolveConflict(List<Animal> animals) { //wyznacza zwycięzcę konfliktu wedlug zasad
+    public Animal resolveConflict(List<Animal> contenders) { //wyznacza zwycięzcę konfliktu wedlug zasad
+        List<Animal> animals = new ArrayList<>();
+        for (Animal animal : contenders) {
+            if (animal.getEnergy()>=this.energyToBeFed){
+                animals.add(animal);
+            }
+        }
         if (animals.isEmpty()) {
             return null;
         }
@@ -158,7 +173,7 @@ public class Map implements WorldMap{
         return List.of(winner1, winner2);
     }
 
-    public void consume(int energy) {
+    public void consume() {
         for (Vector2d position : plants.keySet()) {
             Plant plant = plants.get(position);
             List<Animal> animalList = animals.get(position);
@@ -166,7 +181,7 @@ public class Map implements WorldMap{
             if (animalList != null && !animalList.isEmpty()) {
                 Animal chosenAnimal = resolveConflict(animalList);
                 if (chosenAnimal != null) {
-                    chosenAnimal.addEnergy(energy);
+                    chosenAnimal.addEnergy(this.energyPerPlant);
                     plants.remove(position);
                 }
             }

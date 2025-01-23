@@ -11,7 +11,7 @@ public interface WorldMap extends MoveValidator {
 
     Boundary getCurrentBounds();
 
-    void consume(int energy);
+    void consume();
 
     boolean isOccupied(Vector2d currentPosition);
 

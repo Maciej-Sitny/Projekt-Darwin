@@ -13,14 +13,14 @@ public class Simulation implements Runnable {
     private int growNumber;
     private SimulationPresenter presenter;
 
-    public Simulation(List<Vector2d> positions, WorldMap map, int energy, int genTypeSize, int plantEnergy, int growNumber, SimulationPresenter presenter) {
+    public Simulation(List<Vector2d> positions, WorldMap map, int energy, int genTypeSize, int plantEnergy, int growNumber, SimulationPresenter presenter, SimulationParameters parameters) {
         this.plantEnergy = plantEnergy;
         this.animals = new ArrayList<>();
         this.growNumber = growNumber;
         this.presenter = presenter;
         GenTypeStartGeneration generator = new GenTypeStartGeneration();
         for (Vector2d position : positions) {
-            Animal animal = new Animal(position, energy, generator.generateGenType(genTypeSize));
+            Animal animal = new Animal(position, MapDirection.NORTH,energy, generator.generateGenType(genTypeSize), 0, parameters);
             map.placeAnimal(animal);
             this.animals.add(animal);
         }
@@ -52,7 +52,7 @@ public class Simulation implements Runnable {
                 animal.nextGen();
             }
 
-            this.map.consume(this.plantEnergy);
+            this.map.consume();
             List<Animal> children = this.map.reproduction();
             this.animals.addAll(children);
             this.map.growPlant(this.growNumber);
