@@ -12,19 +12,21 @@ public class Simulation implements Runnable {
     private int plantEnergy;
     private int growNumber;
     private SimulationPresenter presenter;
+    private SimulationParameters parameters;
 
-    public Simulation(List<Vector2d> positions, WorldMap map, int energy, int genTypeSize, int plantEnergy, int growNumber, SimulationPresenter presenter, SimulationParameters parameters) {
+    public Simulation(List<Vector2d> positions, WorldMap map, int energy, int genTypeSize, int plantEnergy, int growNumber, SimulationPresenter presenter,SimulationParameters parameters) {
         this.plantEnergy = plantEnergy;
         this.animals = new ArrayList<>();
         this.growNumber = growNumber;
         this.presenter = presenter;
         GenTypeStartGeneration generator = new GenTypeStartGeneration();
         for (Vector2d position : positions) {
-            Animal animal = new Animal(position, MapDirection.NORTH,energy, generator.generateGenType(genTypeSize), 0, parameters);
+            Animal animal = new Animal(position, MapDirection.NORTH, energy, generator.generateGenType(genTypeSize),0,parameters);
             map.placeAnimal(animal);
             this.animals.add(animal);
         }
         this.map = map;
+        this.parameters = parameters;
     }
 
     public WorldMap getMap() {
@@ -35,32 +37,59 @@ public class Simulation implements Runnable {
         return this.animals;
     }
 
+    public void deadRemover(){
+        List<Animal> deadAnimals = new ArrayList<>();
+        for (Animal animal : this.animals) {
+            if (animal.getEnergy() <= 0) {
+                deadAnimals.add(animal);
+                this.map.removeDeadAnimal(animal);
+            }
+        }
+        this.animals.removeAll(deadAnimals);
+    }
+
+    public void moveOnMap(){
+        for (Animal animal : this.animals) {
+            ArrayList<Integer> gens = animal.getGenType();
+            this.map.move(animal, gens.get(animal.getGenNumber()));
+            animal.nextGen();
+        }
+    }
+
+    public void consumeOnMap(){
+        this.map.consume();
+    }
+
+    public void reproduceOnMap(){
+        List<Animal> children = this.map.reproduction();
+        this.animals.addAll(children);
+    }
+
+    public void plantsGrowOnMap(){
+        this.map.growPlant(this.growNumber);
+    }
+
     public void run() {
         while (!this.animals.isEmpty()) {
-            List<Animal> deadAnimals = new ArrayList<>();
-            for (Animal animal : this.animals) {
-                if (animal.getEnergy() <= 0) {
-                    deadAnimals.add(animal);
-                    this.map.removeDeadAnimal(animal);
+
+            this.deadRemover();
+
+            this.moveOnMap();
+
+            this.consumeOnMap();
+
+            this.reproduceOnMap();
+
+            this.plantsGrowOnMap();
+
+
+            Platform.runLater(() -> {
+                if (this.presenter != null) {
+                    presenter.drawMap(); // Rysowanie mapy
                 }
-            }
-            this.animals.removeAll(deadAnimals);
+            });
 
-            for (Animal animal : this.animals) {
-                ArrayList<Integer> gens = animal.getGenType();
-                this.map.move(animal, gens.get(animal.getGenNumber()));
-                animal.nextGen();
-            }
 
-            this.map.consume();
-            List<Animal> children = this.map.reproduction();
-            this.animals.addAll(children);
-            this.map.growPlant(this.growNumber);
-
-            // Update the map after each step on the JavaFX Application Thread
-            Platform.runLater(() -> presenter.drawMap());
-
-            // Add a delay to visualize the steps
             try {
                 Thread.sleep(1000); // 1 second delay
             } catch (InterruptedException e) {

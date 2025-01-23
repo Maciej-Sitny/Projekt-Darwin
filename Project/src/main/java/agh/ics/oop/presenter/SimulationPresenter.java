@@ -3,11 +3,13 @@ package agh.ics.oop.presenter;
 import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -122,10 +124,11 @@ public class SimulationPresenter extends Application {
                     Integer.parseInt(maxMutations.getText()),
                     mutationVariant.getValue(),
                     Integer.parseInt(genomeLength.getText()));
-            parameters = new SimulationParameters(10,10,"Kula ziemska",10,10,3,3,100,1000,1000,2,7,"Podmianka",9);
+            parameters = new SimulationParameters(10,10,"Kula ziemska",10,10,3,20,100,1000,1000,2,7,"Podmianka",9);
             initializeSimulation();
             new Thread(() -> {
                 simulation.run();
+                System.out.println(simulation.getMap().getPlantsPositions().size());
                 Platform.runLater(() -> {
                     drawMap();
                 });
@@ -162,18 +165,16 @@ public class SimulationPresenter extends Application {
             for (int j = 0; j < mapWidth; j++) {
                 Pane cell = new Pane();
                 cell.setPrefSize(20, 20);
-                cell.setStyle("-fx-background-color: green; -fx-border-color: black; -fx-border-width: 1;"); // Set default background color to green and border color to black
+                cell.setStyle("-fx-background-color: green; -fx-border-color: black; -fx-border-width: 1;");
                 mapGrid.add(cell, j, i);
             }
         }
-
-
 
         // Display plants
         for (Vector2d plantPosition : simulation.getMap().getPlantsPositions()) {
             Pane cell = (Pane) getNodeByRowColumnIndex(plantPosition.getY(), plantPosition.getX(), mapGrid);
             if (cell != null) {
-                cell.setStyle("-fx-background-color: yellow; -fx-border-color: black; -fx-border-width: 1;"); // Set background color to yellow for cells with plants and border color to black
+                cell.setStyle("-fx-background-color: yellow; -fx-border-color: black; -fx-border-width: 1;");
             }
         }
 
@@ -182,11 +183,23 @@ public class SimulationPresenter extends Application {
             Vector2d position = animal.getPosition();
             Pane cell = (Pane) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
             if (cell != null) {
-                cell.setStyle("-fx-background-color: red; -fx-border-color: black; -fx-border-width: 1;"); // Set background color to red for cells with animals and border color to black
+                cell.setStyle("-fx-background-color: red; -fx-border-color: black; -fx-border-width: 1;");
             }
         }
 
-        StackPane root = new StackPane(mapGrid);
+        // Create a label to display the number of plants
+        int numberOfPlants = simulation.getMap().getPlantsPositions().size();
+        Label plantCountLabel = new Label("Number of plants: " + numberOfPlants);
+
+        // Create a label to display the number of animals
+        int numberOfAnimals = simulation.getAnimals().size();
+        Label animalCountLabel = new Label("Number of animals: " + numberOfAnimals);
+
+        // Create a layout to hold the map and the labels
+        VBox layout = new VBox(10, mapGrid, plantCountLabel, animalCountLabel);
+        layout.setAlignment(Pos.CENTER);
+
+        StackPane root = new StackPane(layout);
         Scene mapScene = new Scene(root, 600, 600);
         primaryStage.setScene(mapScene);
     }

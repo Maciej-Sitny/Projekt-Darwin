@@ -2,6 +2,7 @@ package agh.ics.oop;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class Map implements WorldMap {
     protected java.util.Map<Vector2d, List<Animal>> animals = new HashMap<>();
@@ -159,41 +160,49 @@ public class Map implements WorldMap {
         return newAnimalsList;
     }
 
-    public Animal resolveConflict(List<Animal> contenders) { //wyznacza zwycięzcę konfliktu wedlug zasad
-        List<Animal> animals = new ArrayList<>();
-        for (Animal animal : contenders) {
-            if (animal.getEnergy()>=this.energyToBeFed){
-                animals.add(animal);
-            }
+    public Animal resolveConflict(List<Animal> contenders) {
+        if (contenders == null || contenders.isEmpty()) {
+            return null; // Jeśli lista jest pusta, zwróć null
         }
 
-        if (animals.isEmpty()) {
-            return null;
-        }
+        // 1. Znalezienie maksymalnej energii
+        int maxEnergy = contenders.stream()
+                .mapToInt(Animal::getEnergy)
+                .max()
+                .orElseThrow(); // Wyjątek, jeśli lista jest pusta, ale nie powinno to się zdarzyć, bo już to sprawdziliśmy
 
-        animals.sort(Comparator.comparingInt(Animal::getEnergy).reversed()
-                .thenComparingInt(Animal::getAge).reversed()
-                .thenComparingInt(Animal::getChildren).reversed());
+        List<Animal> highestEnergyAnimals = contenders.stream()
+                .filter(animal -> animal.getEnergy() == maxEnergy)
+                .collect(Collectors.toList());
 
-        List<Animal> topAnimals = new ArrayList<>();
-        int maxEnergy = animals.getFirst().getEnergy();
-        int maxAge = animals.getFirst().getAge();
-        int maxChildren = animals.getFirst().getChildren();
+        // 2. Znalezienie maksymalnego wieku spośród zwierząt z największą energią
+        int maxAge = highestEnergyAnimals.stream()
+                .mapToInt(Animal::getAge)
+                .max()
+                .orElseThrow();
 
-        for (Animal animal : animals) {
-            if (animal.getEnergy() == maxEnergy && animal.getAge() == maxAge && animal.getChildren() == maxChildren) {
-                topAnimals.add(animal);
-            } else {
-                break;
-            }
-        }
+        List<Animal> oldestAnimals = highestEnergyAnimals.stream()
+                .filter(animal -> animal.getAge() == maxAge)
+                .collect(Collectors.toList());
 
-        if (topAnimals.size() == 1) {
-            return topAnimals.getFirst();
-        } else {
+        // 3. Znalezienie maksymalnej liczby dzieci spośród zwierząt z największą energią i wiekiem
+        int maxChildren = oldestAnimals.stream()
+                .mapToInt(Animal::getChildren)
+                .max()
+                .orElseThrow();
+
+        List<Animal> mostChildrenAnimals = oldestAnimals.stream()
+                .filter(animal -> animal.getChildren() == maxChildren)
+                .collect(Collectors.toList());
+
+        // 4. Jeśli pozostało więcej niż jedno zwierzę, wybierz losowe
+        if (mostChildrenAnimals.size() > 1) {
             Random random = new Random();
-            return topAnimals.get(random.nextInt(topAnimals.size()));
+            return mostChildrenAnimals.get(random.nextInt(mostChildrenAnimals.size()));
         }
+
+        // Jeśli tylko jedno zwierzę spełnia kryteria, zwracamy je
+        return mostChildrenAnimals.get(0);
     }
 
     public List<Animal> decideWhoWins(List<Animal> animals) { //daje liste zwyciezcow konfliktu, mozna wykorzystac przy jedzeniu też (ten najlepszy to zawsze zerowy indeks)
@@ -204,7 +213,10 @@ public class Map implements WorldMap {
     }
 
     public void consume() {
-        for (Vector2d position : plants.keySet()) {
+        Iterator<Vector2d> iterator = plants.keySet().iterator(); // Iterator dla kluczy
+
+        while (iterator.hasNext()) {
+            Vector2d position = iterator.next();
             Plant plant = plants.get(position);
             List<Animal> animalList = animals.get(position);
 
@@ -212,7 +224,7 @@ public class Map implements WorldMap {
                 Animal chosenAnimal = resolveConflict(animalList);
                 if (chosenAnimal != null) {
                     chosenAnimal.addEnergy(this.energyPerPlant);
-                    plants.remove(position);
+                    iterator.remove(); // Bezpieczne usunięcie rośliny
                 }
             }
         }
