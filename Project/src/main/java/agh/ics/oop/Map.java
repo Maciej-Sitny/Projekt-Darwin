@@ -60,6 +60,7 @@ public class Map implements WorldMap {
 
                 if (freeEq.isEmpty()) {
                     if (!notEq.isEmpty()) {
+                        int length = notEq.size();
                         Vector2d position = notEq.iterator().next();
                         this.plants.put(position, new Plant(position));
                         notEq.remove(position);

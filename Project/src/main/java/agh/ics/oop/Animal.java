@@ -63,6 +63,16 @@ public class Animal implements WorldElement {
         notifyObserver();
     }
 
+    public Animal(Vector2d position, SimulationParameters parameters){
+        this.position = position;
+        this.orientation = MapDirection.NORTH;
+        this.energy = parameters.getInitialEnergy();
+        GenTypeStartGeneration genGenerator = new GenTypeStartGeneration();
+        this.genType = genGenerator.generateGenType(parameters.getGenomeLength());
+        this.genNumber = 0;
+        this.parameters = parameters;
+    }
+
 
     private void notifyObserver() {
         String genTypeString = genType.toString();
