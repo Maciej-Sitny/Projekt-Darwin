@@ -2,15 +2,19 @@ package agh.ics.oop.presenter;
 
 import agh.ics.oop.*;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SimulationPresenter extends Application {
 
@@ -93,8 +97,14 @@ public class SimulationPresenter extends Application {
         grid.add(mutationVariant, 1, 13);
 
         // Length of animal genome
-        grid.add(new Label("Długość genomu"), 0, 14);
+        grid.add(new Label("Długość genomu (>=4)"), 0, 14);
         TextField genomeLength = new TextField();
+        genomeLength.setTextFormatter(new TextFormatter<>(change -> {
+            if (change.getControlNewText().matches("\\d*") && (change.getControlNewText().isEmpty() || Integer.parseInt(change.getControlNewText()) >= 4)) {
+                return change;
+            }
+            return null;
+        }));
         grid.add(genomeLength, 1, 14);
 
         // Submit button
@@ -114,9 +124,15 @@ public class SimulationPresenter extends Application {
                     Integer.parseInt(maxMutations.getText()),
                     mutationVariant.getValue(),
                     Integer.parseInt(genomeLength.getText()));
+            parameters = new SimulationParameters(10,10,"Kula ziemska",10,10,3,20,100,1000,1000,2,7,"Podmianka",9);
             initializeSimulation();
-            drawMap();
-            new Thread(simulation).start(); // Start the simulation in a new thread
+            new Thread(() -> {
+                simulation.run();
+                System.out.println(simulation.getMap().getPlantsPositions().size());
+                Platform.runLater(() -> {
+                    drawMap();
+                });
+            }).start();
         });
         grid.add(submitButton, 1, 16);
 
@@ -128,15 +144,14 @@ public class SimulationPresenter extends Application {
 
     private void initializeSimulation() {
         List<Vector2d> positions = new ArrayList<>();
+        Random random = new Random();
         for (int i = 0; i < parameters.getInitialAnimals(); i++) {
-            positions.add(new Vector2d((int) (Math.random() * parameters.getMapWidth()), (int) (Math.random() * parameters.getMapHeight())));
+            positions.add(new Vector2d(random.nextInt(parameters.getMapWidth()+1), random.nextInt(parameters.getMapHeight()+1)));
         }
-        WorldMap map = new Map(parameters.getMapHeight(), parameters.getMapWidth());
+        WorldMap map = new Map(parameters);
 
-        for (int i = 0; i < parameters.getInitialPlants(); i++) {
-            map.growPlant(1);
-        }
-        simulation = new Simulation(positions, map, parameters.getInitialEnergy(), parameters.getGenomeLength(), parameters.getEnergyPerPlant(), parameters.getPlantsPerDay(), this);
+        map.growPlant(parameters.getInitialPlants());
+        simulation = new Simulation(positions, map, parameters.getInitialEnergy(), parameters.getGenomeLength(), parameters.getEnergyPerPlant(), parameters.getPlantsPerDay(), this, parameters);
     }
 
     public void drawMap() {
@@ -150,8 +165,16 @@ public class SimulationPresenter extends Application {
             for (int j = 0; j < mapWidth; j++) {
                 Pane cell = new Pane();
                 cell.setPrefSize(20, 20);
-                cell.setStyle("-fx-background-color: green; -fx-border-color: black; -fx-border-width: 1;"); // Set default background color to green and border color to black
+                cell.setStyle("-fx-background-color: green; -fx-border-color: black; -fx-border-width: 1;");
                 mapGrid.add(cell, j, i);
+            }
+        }
+
+        // Display plants
+        for (Vector2d plantPosition : simulation.getMap().getPlantsPositions()) {
+            Pane cell = (Pane) getNodeByRowColumnIndex(plantPosition.getY(), plantPosition.getX(), mapGrid);
+            if (cell != null) {
+                cell.setStyle("-fx-background-color: yellow; -fx-border-color: black; -fx-border-width: 1;");
             }
         }
 
@@ -160,19 +183,23 @@ public class SimulationPresenter extends Application {
             Vector2d position = animal.getPosition();
             Pane cell = (Pane) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
             if (cell != null) {
-                cell.setStyle("-fx-background-color: red; -fx-border-color: black; -fx-border-width: 1;"); // Set background color to red for cells with animals and border color to black
+                cell.setStyle("-fx-background-color: red; -fx-border-color: black; -fx-border-width: 1;");
             }
         }
 
-        // Display plants
-        for (Vector2d plantPosition : simulation.getMap().getPlantsPositions()) {
-            Pane cell = (Pane) getNodeByRowColumnIndex(plantPosition.getY(), plantPosition.getX(), mapGrid);
-            if (cell != null) {
-                cell.setStyle("-fx-background-color: yellow; -fx-border-color: black; -fx-border-width: 1;"); // Set background color to yellow for cells with plants and border color to black
-            }
-        }
+        // Create a label to display the number of plants
+        int numberOfPlants = simulation.getMap().getPlantsPositions().size();
+        Label plantCountLabel = new Label("Number of plants: " + numberOfPlants);
 
-        StackPane root = new StackPane(mapGrid);
+        // Create a label to display the number of animals
+        int numberOfAnimals = simulation.getAnimals().size();
+        Label animalCountLabel = new Label("Number of animals: " + numberOfAnimals);
+
+        // Create a layout to hold the map and the labels
+        VBox layout = new VBox(10, mapGrid, plantCountLabel, animalCountLabel);
+        layout.setAlignment(Pos.CENTER);
+
+        StackPane root = new StackPane(layout);
         Scene mapScene = new Scene(root, 600, 600);
         primaryStage.setScene(mapScene);
     }

@@ -1,6 +1,7 @@
 package agh.ics.oop;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 
@@ -12,6 +13,8 @@ public class Animal implements WorldElement{
     private int genNumber;
     private int children = 0;
     private int age = 0;
+    private SimulationParameters parameters;
+
 
 
     public Animal() {
@@ -31,12 +34,13 @@ public class Animal implements WorldElement{
         this.genNumber = 0;
     }
 
-    public Animal(Vector2d position, MapDirection orientation, int energy, ArrayList<Integer> genType, int genNumber){ //dodatkowy konstruktor specjalnie pod nowonarodzone dziecko (według opisu projektu dziecko ma losową orientację)
+    public Animal(Vector2d position, MapDirection orientation, int energy, ArrayList<Integer> genType, int genNumber, SimulationParameters parameters){ //dodatkowy konstruktor specjalnie pod nowonarodzone dziecko (według opisu projektu dziecko ma losową orientację)
         this.position = position;
         this.orientation = orientation;
         this.energy = energy;
         this.genType = genType;
         this.genNumber = genNumber;
+        this.parameters = parameters;
     }
 
     public Vector2d getPosition() {
@@ -94,10 +98,10 @@ public class Animal implements WorldElement{
         this.orientation = this.orientation.new_direction(direction);
         Vector2d tmp = this.position.add(this.orientation.toUnitVector());
         if (moveValidator.canMoveTo(tmp)) {
-            if (tmp.getX() > 4) {
+            if (tmp.getX() > parameters.getMapWidth()) {
                 this.position = new Vector2d(0, tmp.getY());
             } else if (tmp.getX() < 0) {
-                this.position = new Vector2d(4, tmp.getY());
+                this.position = new Vector2d(parameters.getMapWidth(), tmp.getY());
             } else {
                 this.position = tmp;
             }
@@ -130,13 +134,13 @@ public class Animal implements WorldElement{
 
     public Animal reproduce(Animal parent2){ //parent2 jest zawsze słabszy od this TRZEBA DODAĆ ILE ENERGII DOSTAJE DZIECKO I TRACA RODZICE
         ArrayList<Integer> genType = new ArrayList<>();
-
+        Random random = new Random();
         int sumOfEnergy = this.energy + parent2.energy;
 
         int ratioParent1= this.energy/sumOfEnergy;
         int ratioParent2= parent2.energy/sumOfEnergy;
 
-        int choice = (int) (Math.random() * 2); // 0 to lewa strona, 1 to prawa strona
+        int choice = (int) (random.nextInt(2)); // 0 to lewa strona, 1 to prawa strona
 
         int lengthOfParent1=(int) this.genType.size()*ratioParent1;
         int lengthOfParent2=parent2.genType.size()-lengthOfParent1;
@@ -157,19 +161,29 @@ public class Animal implements WorldElement{
                 genType.add(this.genType.get(i));
             }
         }
-        ArrayList<Integer> newGenType = mutationSwap(genType, 1);
-        Random random = new Random();
-        return new Animal(this.position, this.getRandomDirection(), this.energy/4 + parent2.energy/4, newGenType, random.nextInt(8)); //tutaj trzeba poprawić potem jeszcze tą ilość energii
+        ArrayList<Integer> newGenType = new ArrayList<>();
+        if (parameters.getMutationVariant()=="Pełna losowość"){
+            newGenType = mutationFullRandomness(genType);
+        }
+        else if (parameters.getMutationVariant()=="Podmianka"){
+            newGenType = mutationSwap(genType);
+        }
+        this.removeEnergy(this.parameters.getEnergyUsedByParents());
+        parent2.removeEnergy(this.parameters.getEnergyUsedByParents());
+
+        return new Animal(this.position, this.getRandomDirection(), 2*this.parameters.getEnergyUsedByParents(), newGenType, random.nextInt(8), parameters); //tutaj trzeba poprawić potem jeszcze tą ilość energii
     }
 
 
-    public ArrayList<Integer> mutationFullRandomness(ArrayList<Integer> genType, int amount){
+    public ArrayList<Integer> mutationFullRandomness(ArrayList<Integer> genType){
         ArrayList<Integer> newGenType = new ArrayList<>();
         ArrayList<Integer> randomIndexes = new ArrayList<>();
+        Random random = new Random();
+        int amount = (random.nextInt(parameters.getMinMutations(), parameters.getMaxMutations()+1));
         int randomIndex;
 
         for (int i=0; i<amount;i++) {
-            randomIndex = (int) (Math.random() * genType.size());
+            randomIndex = (random.nextInt(genType.size()));
             if (!randomIndexes.contains(randomIndex)) {
                 randomIndexes.add(randomIndex);
             }
@@ -177,7 +191,7 @@ public class Animal implements WorldElement{
 
         for (int i=0; i<genType.size();i++){
             if (randomIndexes.contains(i)){
-                newGenType.add((int) (Math.random() * 8));
+                newGenType.add(random.nextInt(8));
             }
             else{
                 newGenType.add(genType.get(i));
@@ -186,15 +200,16 @@ public class Animal implements WorldElement{
         return newGenType;
     }
 
-    public ArrayList<Integer> mutationSwap(ArrayList<Integer> genType, int amount){ //amount oznacza ile będzie podmianek, więc zmienionych pozycji w genotypie będzie 2*amount
+    public ArrayList<Integer> mutationSwap(ArrayList<Integer> genType){
         ArrayList<Integer> newGenType = new ArrayList<>(genType); //kopiowanie genotypu
-
+        Random random = new Random();
+        int amount = random.nextInt(this.parameters.getMinMutations(), this.parameters.getMaxMutations()+1); //losowanie ilości podmianek
         for (int i=0; i<amount;i++){
-            int randomIndex1 = (int) (Math.random() * genType.size());
-            int randomIndex2 = (int) (Math.random() * genType.size());
+            int randomIndex1 = random.nextInt(genType.size());
+            int randomIndex2 = random.nextInt(genType.size());
 
             while (randomIndex1 == randomIndex2){ //upewnienie się, że indeksy są różne
-                randomIndex2 = (int) (Math.random() * genType.size());
+                randomIndex2 = random.nextInt(genType.size());
             }
 
             int tmp = newGenType.get(randomIndex1);
