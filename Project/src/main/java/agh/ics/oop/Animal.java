@@ -101,7 +101,7 @@ public class Animal implements WorldElement{
             if (tmp.getX() > parameters.getMapWidth()) {
                 this.position = new Vector2d(0, tmp.getY());
             } else if (tmp.getX() < 0) {
-                this.position = new Vector2d(parameters.getMapWidth(), tmp.getY());
+                this.position = new Vector2d(parameters.getMapWidth()-1, tmp.getY());
             } else {
                 this.position = tmp;
             }
