@@ -224,6 +224,7 @@ public class Map implements WorldMap {
                 Animal chosenAnimal = resolveConflict(animalList);
                 if (chosenAnimal != null) {
                     chosenAnimal.addEnergy(this.energyPerPlant);
+                    chosenAnimal.eatPlant();
                     iterator.remove(); // Bezpieczne usunięcie rośliny
                 }
             }
