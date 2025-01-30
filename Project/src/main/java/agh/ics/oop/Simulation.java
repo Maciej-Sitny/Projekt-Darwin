@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Simulation implements Runnable {
+public class
+Simulation implements Runnable {
     private List<Animal> animals;
     private WorldMap map;
     private int plantEnergy;
@@ -19,6 +20,10 @@ public class Simulation implements Runnable {
     private CSVWriter csvWriter;
     private int day = 0;
     private List<Animal> allDeadAnimals = new ArrayList<>();
+
+    public boolean running() {
+        return this.isRunning;
+    }
 
     public Simulation(List<Vector2d> positions, WorldMap map, int energy, int genTypeSize, int plantEnergy, int growNumber, SimulationPresenter presenter,SimulationParameters parameters) {
         this.plantEnergy = plantEnergy;
@@ -75,7 +80,7 @@ public class Simulation implements Runnable {
     public void moveOnMap(){
         for (Animal animal : this.animals) {
             ArrayList<Integer> gens = animal.getGenType();
-            this.map.move(animal, gens.get(animal.getGenNumber()));
+            this.map.move(animal, gens.get(animal.getGenNumber()%animal.getGenType().size()));
             animal.nextGen();
         }
     }
@@ -91,9 +96,14 @@ public class Simulation implements Runnable {
     }
 
     public void energyDepletion() {
-
-        for (Animal animal : animals) {
-            animal.removeEnergy(parameters.getEnergyLost() + parameters.getPoleDistance() * Math.abs((int) parameters.getMapHeight() / 2 - animal.getPosition().getY()));
+        if (parameters.getMapType().equals("Poles")) {
+            for (Animal animal : animals) {
+                animal.removeEnergy(parameters.getEnergyLost() + Math.abs(parameters.getMapHeight() / 2 - animal.getPosition().getY()));
+            }
+        } else {
+            for (Animal animal : animals) {
+                animal.removeEnergy(parameters.getEnergyLost());
+            }
         }
     }
 
@@ -198,4 +208,5 @@ public class Simulation implements Runnable {
             }
         }
     }
+
 }

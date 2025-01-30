@@ -71,6 +71,7 @@ public class Animal implements WorldElement {
         this.genType = genGenerator.generateGenType(parameters.getGenomeLength());
         this.genNumber = 0;
         this.parameters = parameters;
+        this.observer = new Observer(this);
     }
 
 
@@ -143,17 +144,24 @@ public class Animal implements WorldElement {
         this.orientation = this.orientation.new_direction(direction);
         Vector2d tmp = this.position.add(this.orientation.toUnitVector());
         if (moveValidator.canMoveTo(tmp)) {
-            if (tmp.getX() > parameters.getMapWidth()) {
-                this.position = new Vector2d(0, tmp.getY());
-            } else if (tmp.getX() < 0) {
-                this.position = new Vector2d(parameters.getMapWidth() - 1, tmp.getY());
+            if (parameters.getMapType().equals("Round Globe")) {
+                if (tmp.getX() >= parameters.getMapWidth()) {
+                    this.position = new Vector2d(0, tmp.getY());
+                } else if (tmp.getX() < 0) {
+                    this.position = new Vector2d(parameters.getMapWidth() - 1, tmp.getY());
+                } else {
+                    this.position = tmp;
+                }
             } else {
                 this.position = tmp;
             }
+            notifyObserver();
         } else {
-            this.orientation = this.orientation.back();
+            if (parameters.getMapType().equals("Round Globe")) {
+                this.orientation = this.orientation.back();
+                notifyObserver();
+            }
         }
-        notifyObserver();
     }
 
     public void addAge() {
@@ -163,6 +171,7 @@ public class Animal implements WorldElement {
 
     public void addChild() {
         this.children += 1;
+        notifyObserver();
     }
 
     public int getChildren() {
@@ -211,7 +220,9 @@ public class Animal implements WorldElement {
         this.removeEnergy(this.parameters.getEnergyUsedByParents());
         parent2.removeEnergy(this.parameters.getEnergyUsedByParents());
 
-        Animal child = new Animal(this.position, this.getRandomDirection(), 2 * this.parameters.getEnergyUsedByParents(), newGenType, random.nextInt(8), parameters);
+        Animal child = new Animal(this.position, this.getRandomDirection(), 2 * this.parameters.getEnergyUsedByParents(), newGenType, random.nextInt(parent2.getGenType().size()), parameters);
+        this.addChild();
+        parent2.addChild();
         notifyObserver(); // Powiadamianie obserwatora po reprodukcji
         return child;
     }

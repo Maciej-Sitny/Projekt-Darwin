@@ -1,5 +1,4 @@
 package agh.ics.oop;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,7 +12,7 @@ class MapTest {
 
     @BeforeEach
     void setUp() {
-        parameters = new SimulationParameters(10, 10, 20, 10, 5, 2, 3, 1000, 10, 1, 3, "Podmianka", 7, 2, 3);
+        parameters = new SimulationParameters(10, 10, 20, 10, 5, 2, 3, 1000, 10, 1, 3, "Podmianka", 7, 2, "Round Globe");
         map = new Map(parameters);
     }
 

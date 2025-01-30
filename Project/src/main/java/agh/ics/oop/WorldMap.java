@@ -25,4 +25,5 @@ public interface WorldMap extends MoveValidator {
     Set<Vector2d> getPlantsPositions();
     Set<Vector2d> findPlaceForPlants();
     int getPlantCount();
+    java.util.Map<Vector2d, List<Animal>> getAnimals();
 }

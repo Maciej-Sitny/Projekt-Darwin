@@ -14,6 +14,7 @@ public class Map implements WorldMap {
     private int plantsPerDay;
     private int energyToBeFed;
     private int energyUsedByParents;
+    private String mapType;
 
     public Map(SimulationParameters parameters) {
 
@@ -23,14 +24,25 @@ public class Map implements WorldMap {
         this.energyPerPlant = parameters.getEnergyPerPlant(); // użyte
         this.plantsPerDay = parameters.getPlantsPerDay(); //użyte
         this.energyToBeFed = parameters.getEnergyToBeFed(); //użyte
-        this.energyUsedByParents = parameters.getEnergyUsedByParents(); //użyte
+        this.energyUsedByParents = parameters.getEnergyUsedByParents();
+        this.mapType = parameters.getMapType();
     }
 
     public boolean canMoveTo(Vector2d position) {
-        if (position.getY() < 0 || position.getY() >= this.height) {
-            return false;
+        if (mapType.equals("Poles"))
+        {
+            if (position.getY() < 0 || position.getY() >= this.height || position.getX() < 0 || position.getX() >= this.width) {
+                return false;
+            } else {
+                return true;
+            }
+
         } else {
-            return true;
+            if (position.getY() < 0 || position.getY() >= this.height) {
+                return false;
+            } else {
+                return true;
+            }
         }
     }
 
@@ -61,7 +73,7 @@ public class Map implements WorldMap {
                 if (freeEq.isEmpty()) {
                     if (!notEq.isEmpty()) {
                         int length = notEq.size();
-                        Vector2d position = notEq.iterator().next();
+                        Vector2d position = getRandomElement(notEq);
                         this.plants.put(position, new Plant(position));
                         notEq.remove(position);
                         cnt++;
@@ -70,7 +82,7 @@ public class Map implements WorldMap {
 
                 else if (notEq.isEmpty()) {
                     if (!freeEq.isEmpty()) {
-                        Vector2d position = freeEq.iterator().next();
+                        Vector2d position = getRandomElement(freeEq);
                         this.plants.put(position, new Plant(position));
                         freeEq.remove(position);
                         cnt++;
@@ -82,14 +94,14 @@ public class Map implements WorldMap {
                     if (tmp % 5 < 4) {
 
                         if (!freeEq.isEmpty()) {
-                            Vector2d position = freeEq.iterator().next();
+                            Vector2d position = getRandomElement(freeEq);
                             this.plants.put(position, new Plant(position));
                             freeEq.remove(position);
                             cnt++;
                         }
                     } else {
                         if (!notEq.isEmpty()) {
-                            Vector2d position = notEq.iterator().next();
+                            Vector2d position = getRandomElement(notEq);
                             this.plants.put(position, new Plant(position));
                             notEq.remove(position);
                             cnt++;
@@ -299,5 +311,14 @@ public class Map implements WorldMap {
         }
 
         return freePlaces;
+    }
+
+    private Vector2d getRandomElement(Set<Vector2d> set) {
+        int index = new Random().nextInt(set.size());
+        return new ArrayList<>(set).get(index);
+    }
+
+    public java.util.Map<Vector2d, List<Animal>> getAnimals() {
+        return animals;
     }
 }
