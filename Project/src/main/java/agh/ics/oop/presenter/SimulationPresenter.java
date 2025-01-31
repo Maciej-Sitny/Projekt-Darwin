@@ -14,6 +14,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.*;
@@ -74,10 +76,39 @@ public class SimulationPresenter extends Application {
         mutationVariant.setValue("Full randomness");
         grid.add(mutationVariant, 1, 14);
 
+
+
         CheckBox saveDataCheckBox = new CheckBox("Save data to file");
         grid.add(saveDataCheckBox, 1, 15);
+
+        CheckBox LoadConfiguration = new CheckBox("Loaded Configuration from entrydata");
+        grid.add(LoadConfiguration, 0, 16);
+
+
         Button submitButton = new Button("Start");
+
         submitButton.setOnAction(e -> {
+            if (LoadConfiguration.isSelected() ){
+                try {
+                    Scanner scanner = new Scanner(new File("src/main/java/agh/ics/oop/resources/entrydata"));
+                    mapHeight.setText(scanner.nextLine().trim());
+                    mapWidth.setText(scanner.nextLine().trim());
+                    initialPlants.setText(scanner.nextLine().trim());
+                    energyPerPlant.setText(scanner.nextLine().trim());
+                    plantsPerDay.setText(scanner.nextLine().trim());
+                    initialAnimals.setText(scanner.nextLine().trim());
+                    initialEnergy.setText(scanner.nextLine().trim());
+                    energyLost.setText(scanner.nextLine().trim());
+                    energyToBeFed.setText(scanner.nextLine().trim());
+                    energyUsedByParents.setText(scanner.nextLine().trim());
+                    minMutations.setText(scanner.nextLine().trim());
+                    maxMutations.setText(scanner.nextLine().trim());
+                    genomeLength.setText(scanner.nextLine().trim());
+                    scanner.close();
+                } catch (FileNotFoundException ex) {
+                    System.err.println("Error: File not found - " + ex.getMessage());
+                }
+            }
             if (validateInput(mapHeight, mapWidth, initialPlants, energyPerPlant, plantsPerDay,
                     initialAnimals, initialEnergy, energyLost, energyToBeFed, energyUsedByParents,
                     minMutations, maxMutations, genomeLength)) {
