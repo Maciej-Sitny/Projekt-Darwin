@@ -203,12 +203,17 @@ public class SimulationPresenter extends Application {
 
         int mapHeight = parameters.getMapHeight();
         int mapWidth = parameters.getMapWidth();
-
+        int equatorWidth = mapHeight * 20 / 100;
         for (int i = 0; i < mapHeight; i++) {
             for (int j = 0; j < mapWidth; j++) {
                 Rectangle cell = new Rectangle(20, 20);
                 cell.setStroke(Color.BLACK);
-                cell.setFill(Color.GREEN);
+                if (i >= (int)mapHeight/2 - (int)equatorWidth/2 && i <= (int)mapHeight/2 + (int)equatorWidth/2){
+                    cell.setFill(Color.DARKGREEN);
+                }
+                else {
+                    cell.setFill(Color.GREEN);
+                }
                 cell.getStyleClass().add("cell");
                 mapGrid.add(cell, j, i);
             }
