@@ -15,6 +15,7 @@ public class Animal implements WorldElement {
     private SimulationParameters parameters;
     private int plantsEaten = 0;
     private Observer observer;
+    private Integer deathDay = null;
 
 
     public Animal() {
@@ -274,5 +275,12 @@ public class Animal implements WorldElement {
             newGenType.set(randomIndex2, tmp);
         }
         return newGenType;
+    }
+    public Integer getDeathDay(){
+        return this.deathDay;
+    }
+
+    public  void  setDeathDay(Integer deathDay){
+        this.deathDay = deathDay;
     }
 }

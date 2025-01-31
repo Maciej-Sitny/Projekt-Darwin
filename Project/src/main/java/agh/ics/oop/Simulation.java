@@ -52,6 +52,9 @@ Simulation implements Runnable {
         }
 
     }
+    public int getDay(){
+        return this.day;
+    }
 
     public WorldMap getMap() {
         return this.map;
