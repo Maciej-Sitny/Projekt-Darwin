@@ -15,6 +15,15 @@ Symulacja każdego dnia składa się z poniższej sekwencji kroków:
 4. Rozmnażanie się najedzonych zwierzaków znajdujących się na tym samym polu.
 5. Wzrastanie nowych roślin na wybranych polach mapy.
 
+## Wytłumaczenie UI
+- ![#008000](https://placehold.co/15x15/008000/008000.png) - pole wolne
+- ![#FFFF00](https://placehold.co/15x15/FFFF00/FFFF00.png) - pole z rośliną
+- ![#EF0000](https://placehold.co/15x15/EF0000/EF0000.png) - ![#210000](https://placehold.co/15x15/210000/210000.png) - pole ze zwięrzeciem z pokazaną energią - im ciemniejszy odcień czerwieni, tym mniej energii
+- ![#FFFFE0](https://placehold.co/15x15/FFFFE0/FFFFE0.png) - pole wolne na równiku (największa szansa, że pojawi się tam roślina)
+- ![#FFA500](https://placehold.co/15x15/FFA500/FFA500.png) - pole ze zwierzęciem z najczęściej pojawiącym się genotypem
+- ![#0000FF](https://placehold.co/15x15/0000FF/0000FF.png) - pole, na którym pojawiło się dziecko
+- ![#800080](https://placehold.co/15x15/800080/800080.png) - pole z aktualnie śledzonym zwierzęciem
+
 ## Parametry przyjmowane przez program
 - wysokość mapy
 - szerokość mapy
