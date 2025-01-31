@@ -43,7 +43,7 @@ Simulation implements Runnable {
         this.parameters = parameters;
 
         if (parameters.isSaveDataToFile()) {
-            List<String> headers = List.of("Day", "Total Animals", "Total Plants", "Average Energy", "Number of Free Cells", "Average Age of Dead Animals");
+            List<String> headers = List.of("Day", "Total Animals", "Total Plants", "Average Energy", "Number of Free Cells", "Average Age of Dead Animals","Most Popular GenType");
             try {
                 csvWriter = new CSVWriter("simulation_data.csv", headers);
             } catch (IOException e) {
