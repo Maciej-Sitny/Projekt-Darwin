@@ -5,11 +5,13 @@ import agh.ics.oop.Map;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import java.util.HashMap;
 import java.util.*;
@@ -214,16 +216,23 @@ public class SimulationPresenter extends Application {
         GridPane mapGrid = new GridPane();
         mapGrid.setGridLinesVisible(true);
         mapGrid.setAlignment(Pos.CENTER);
-
         int mapHeight = parameters.getMapHeight();
         int mapWidth = parameters.getMapWidth();
+        Screen screen = Screen.getPrimary();
+        Rectangle2D bounds = screen.getBounds();
+        int screenWidth = (int)bounds.getWidth();
+        int screenHeight = (int)bounds.getHeight();
+
+        int size = Math.min((screenWidth/2) / (mapWidth + 2), (screenHeight / 2) / (mapHeight + 2));
+
+
         int equatorWidth = mapHeight * 20 / 100;
         for (int i = 0; i < mapHeight; i++) {
             for (int j = 0; j < mapWidth; j++) {
-                Rectangle cell = new Rectangle(20, 20);
+                Rectangle cell = new Rectangle(size, size);
                 cell.setStroke(Color.BLACK);
-                if (i >= (int)mapHeight/2 - (int)equatorWidth/2 && i <= (int)mapHeight/2 + (int)equatorWidth/2){
-                    cell.setFill(Color.DARKGREEN);
+                if (!simulation.running() && i >= (int)mapHeight/2 - (int)equatorWidth/2 && i <= (int)mapHeight/2 + (int)equatorWidth/2){
+                    cell.setFill(Color.LIGHTYELLOW);
                 }
                 else {
                     cell.setFill(Color.GREEN);
@@ -279,7 +288,10 @@ public class SimulationPresenter extends Application {
         int numberOfAnimals = simulation.getAnimals().size();
         Label animalCountLabel = new Label("Number of animals: " + numberOfAnimals);
 
-        int numberOfFreeFields = mapHeight * mapWidth - numberOfPlants - numberOfAnimals;
+        Set<Vector2d> free = new HashSet<>();
+        free.addAll(simulation.getMap().getPlantsPositions());
+        free.addAll(simulation.getMap().getAnimals().keySet());
+        int numberOfFreeFields = Math.max(0, mapWidth * mapHeight - free.size());
         Label freeFieldsLabel = new Label("Number of free fields: " + numberOfFreeFields);
 
         int totalEnergy = simulation.getAnimals().stream().mapToInt(Animal::getEnergy).sum();
