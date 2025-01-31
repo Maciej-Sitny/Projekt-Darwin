@@ -10,9 +10,9 @@ public class CSVWriter {
 
     public CSVWriter(String filename, List<String> headers) throws IOException {
         this.filename = filename;
-        fileWriter = new FileWriter(filename, true); // Open in append mode
+        fileWriter = new FileWriter(filename, true);
         if (new java.io.File(filename).length() == 0) {
-            writeLine(headers); // Write headers only if the file is empty
+            writeLine(headers);
         }
     }
 
@@ -26,6 +26,12 @@ public class CSVWriter {
     }
 
     public void open() throws IOException {
-        fileWriter = new FileWriter(filename, true); // Open in append mode
+        fileWriter = new FileWriter(filename, true);
+    }
+
+    public void clearFile() throws IOException {
+        fileWriter = new FileWriter(filename, false);
+        fileWriter.close();
+        open();
     }
 }

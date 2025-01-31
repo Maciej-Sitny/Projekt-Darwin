@@ -13,6 +13,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,10 +36,12 @@ public class SimulationPresenter extends Application {
     private Label deathDayLabel = new Label("Death day: ");
     private Label mostPopularGenLabel = new Label("Most popular genType: "); // Initialize the label
 
+    private CSVWriter csvWriter;
+
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        primaryStage.setTitle("Simulation Parameters");
+        primaryStage.setTitle("Simulation");
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -93,7 +97,7 @@ public class SimulationPresenter extends Application {
                         Integer.parseInt(genomeLength.getText()),
                         Integer.parseInt(energyLost.getText()),
                         mapType.getValue(),
-                        saveDataCheckBox.isSelected() // Pass the value of the CheckBox
+                        saveDataCheckBox.isSelected()
                 );
 
                 initializeSimulation();
@@ -188,6 +192,16 @@ public class SimulationPresenter extends Application {
     }
 
     private void initializeSimulation() {
+        if (parameters.isSaveDataToFile()) {
+            List<String> headers = List.of("Day", "Total Animals", "Total Plants", "Average Energy", "Number of Free Cells", "Average Age of Dead Animals", "Most popular genType");
+            try {
+                csvWriter = new CSVWriter("simulation_data.csv", headers);
+                csvWriter.clearFile();
+            } catch (IOException e) {
+                System.err.println("Failed to initialize CSV writer: " + e.getMessage());
+            }
+        }
+
         List<Vector2d> positions = new ArrayList<>();
         Random random = new Random();
         for (int i = 0; i < parameters.getInitialAnimals(); i++) {
@@ -204,7 +218,7 @@ public class SimulationPresenter extends Application {
             Vector2d position = selectedAnimal.getPosition();
             Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
             if (cell != null) {
-                cell.setFill(Color.PURPLE); // Highlight the selected animal
+                cell.setFill(Color.PURPLE);
             }
         }
     }
@@ -254,7 +268,7 @@ public class SimulationPresenter extends Application {
             Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
             if (cell != null) {
                 if (!simulation.running() && animal.getGenType().equals(mostPopularGen)) {
-                    cell.setFill(Color.ORANGE); // Highlight animals with the most popular genType when stopped
+                    cell.setFill(Color.ORANGE);
                 } else {
                     if (animal.getAge() == 1) {
                         cell.setFill(Color.BLUE);
@@ -280,7 +294,7 @@ public class SimulationPresenter extends Application {
             }
         }
 
-        highlightSelectedAnimal(mapGrid); // Highlight the selected animal if any
+        highlightSelectedAnimal(mapGrid);
 
         int numberOfPlants = simulation.getMap().getPlantsPositions().size();
         Label plantCountLabel = new Label("Number of plants: " + numberOfPlants);
@@ -320,7 +334,7 @@ public class SimulationPresenter extends Application {
                 while (simulation.running()) {
                     Platform.runLater(this::updateAnimalStatistics);
                     try {
-                        Thread.sleep(1000); // Update every second
+                        Thread.sleep(1000);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                     }

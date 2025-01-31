@@ -132,14 +132,15 @@ Simulation implements Runnable {
         int numberOfFreeCells = parameters.getMapHeight() * parameters.getMapWidth() - totalAnimals - totalPlants;
         int totalDeadAge = allDeadAnimals.stream().mapToInt(Animal::getAge).sum();
         int averageDeadAge = allDeadAnimals.size() > 0 ? (int) totalDeadAge / allDeadAnimals.size() : 0;
-
+        ArrayList<Integer> mostPopularGen = mostPopularGen();
         return List.of(
-                String.valueOf(day),          // Day of simulation
-                String.valueOf(totalAnimals), // Number of animals
-                String.valueOf(totalPlants),  // Number of plants
-                String.valueOf(averageEnergy), // Average energy
-                String.valueOf(numberOfFreeCells), // Number of free cells
-                String.valueOf(averageDeadAge) // Average age of dead animals
+                String.valueOf(day),
+                String.valueOf(totalAnimals),
+                String.valueOf(totalPlants),
+                String.valueOf(averageEnergy),
+                String.valueOf(numberOfFreeCells),
+                String.valueOf(averageDeadAge),
+                String.valueOf(mostPopularGen)
         );
     }
 
@@ -199,7 +200,7 @@ Simulation implements Runnable {
 
             Platform.runLater(() -> {
                 if (this.presenter != null) {
-                    presenter.drawMap(); // Rysowanie mapy
+                    presenter.drawMap();
                 }
             });
 
