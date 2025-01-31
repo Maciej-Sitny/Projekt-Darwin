@@ -19,16 +19,18 @@ public class SimulationPresenter extends Application {
     private SimulationParameters parameters;
     private Stage primaryStage;
     private Simulation simulation;
+    private Animal selectedAnimal;
+    private Animal previousSelectedAnimal;
 
     // Declare labels at the class level
-    private Label genomeLabel;
-    private Label energyLabel;
-    private Label plantsEatenLabel;
-    private Label childrenLabel;
-    private Label descendantsLabel;
-    private Label ageLabel;
-    private Label deathDayLabel;
-    private Label mostPopularGenLabel; // Add this field to SimulationPresenter
+    private Label energyLabel = new Label("Energy: ");
+    private Label genomeLabel = new Label("Genome: ");
+    private Label plantsEatenLabel = new Label("Plants eaten: ");
+    private Label childrenLabel = new Label("Children: ");
+    private Label descendantsLabel = new Label("Descendants: ");
+    private Label ageLabel = new Label("Age: ");
+    private Label deathDayLabel = new Label("Death day: ");
+    private Label mostPopularGenLabel = new Label("Most popular genType: "); // Initialize the label
 
     @Override
     public void start(Stage primaryStage) {
@@ -195,6 +197,18 @@ public class SimulationPresenter extends Application {
         simulation = new Simulation(positions, map, parameters.getInitialEnergy(), parameters.getGenomeLength(), parameters.getEnergyPerPlant(), parameters.getPlantsPerDay(), this, parameters);
     }
 
+    private void highlightSelectedAnimal(GridPane mapGrid) {
+        if (selectedAnimal != null) {
+            Vector2d position = selectedAnimal.getPosition();
+            Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
+            if (cell != null) {
+                cell.setFill(Color.PURPLE); // Highlight the selected animal
+            }
+        }
+    }
+
+
+
     public void drawMap() {
         ArrayList<Integer> mostPopularGen = simulation.mostPopularGen();
         GridPane mapGrid = new GridPane();
@@ -231,7 +245,6 @@ public class SimulationPresenter extends Application {
             Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
             if (cell != null) {
                 if (!simulation.running() && animal.getGenType().equals(mostPopularGen)) {
-                    System.out.println("ELO");
                     cell.setFill(Color.ORANGE); // Highlight animals with the most popular genType when stopped
                 } else {
                     if (animal.getAge() == 1) {
@@ -247,23 +260,18 @@ public class SimulationPresenter extends Application {
                 }
 
                 cell.setOnMouseClicked(event -> {
-                    genomeLabel.setText("Genome: " + animal.getGenType().toString());
-                    energyLabel.setText("Energy: " + animal.getEnergy());
-                    plantsEatenLabel.setText("Plants eaten: " + animal.getPlantsEaten());
-                    childrenLabel.setText("Children: " + animal.getChildren());
-                    ageLabel.setText("Age: " + (animal.getEnergy() > 0 ? animal.getAge() : "N/A"));
+                    if (previousSelectedAnimal != null) {
+                        resetAnimalColor(previousSelectedAnimal, mapGrid);
+                    }
+                    selectedAnimal = animal;
+                    previousSelectedAnimal = animal;
+                    updateAnimalStatistics();
+                    highlightSelectedAnimal(mapGrid);
                 });
             }
         }
 
-        genomeLabel = new Label("Genome: ");
-        energyLabel = new Label("Energy: ");
-        plantsEatenLabel = new Label("Plants eaten: ");
-        childrenLabel = new Label("Children: ");
-        descendantsLabel = new Label("Descendants: ");
-        ageLabel = new Label("Age: ");
-        deathDayLabel = new Label("Death day: ");
-        mostPopularGenLabel = new Label("Most popular genType: "); // Initialize the label
+        highlightSelectedAnimal(mapGrid); // Highlight the selected animal if any
 
         int numberOfPlants = simulation.getMap().getPlantsPositions().size();
         Label plantCountLabel = new Label("Number of plants: " + numberOfPlants);
@@ -288,7 +296,6 @@ public class SimulationPresenter extends Application {
             simulation.stop();
             drawMap();
             mostPopularGenLabel.setText("Most popular genType: " + simulation.mostPopularGen().toString());
-
         });
 
         Button resumeButton = new Button("Resume");
@@ -297,12 +304,22 @@ public class SimulationPresenter extends Application {
             synchronized (simulation) {
                 simulation.notify();
             }
+            new Thread(() -> {
+                while (simulation.running()) {
+                    Platform.runLater(this::updateAnimalStatistics);
+                    try {
+                        Thread.sleep(1000); // Update every second
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }).start();
         });
 
         VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeFieldsLabel, averageEnergyLabel, averageDeadAgeLabel, mostPopularGenLabel);
         leftStats.setAlignment(Pos.CENTER);
 
-        VBox rightStats = new VBox(10, genomeLabel, energyLabel, plantsEatenLabel, childrenLabel, descendantsLabel, ageLabel, deathDayLabel, stopButton, resumeButton);
+        VBox rightStats = new VBox(10, genomeLabel, energyLabel, plantsEatenLabel, childrenLabel, ageLabel, deathDayLabel, stopButton, resumeButton);
         rightStats.setAlignment(Pos.CENTER);
 
         HBox statsLayout = new HBox(20, leftStats, rightStats);
@@ -318,6 +335,38 @@ public class SimulationPresenter extends Application {
         primaryStage.setWidth(mapGrid.getWidth() + 40);
         primaryStage.setHeight(mapGrid.getHeight() + 200);
         primaryStage.sizeToScene();
+    }
+
+    private void resetAnimalColor(Animal animal, GridPane mapGrid) {
+        Vector2d position = animal.getPosition();
+        Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
+        if (cell != null) {
+            if (animal.getAge() == 1) {
+                cell.setFill(Color.BLUE);
+            }
+            else if (animal.getGenType().equals(simulation.mostPopularGen())) {
+                cell.setFill(Color.ORANGE);
+            }
+            else {
+                int maxEnergy = parameters.getInitialEnergy();
+                int energy = Math.max(0, Math.min(animal.getEnergy(), maxEnergy));
+                double intensity = (double) energy / maxEnergy;
+                int redValue = (int) (255 * intensity);
+                Color dynamicColor = Color.rgb(redValue, 0, 0);
+                cell.setFill(dynamicColor);
+            }
+        }
+    }
+
+    private void updateAnimalStatistics() {
+        if (selectedAnimal != null) {
+            genomeLabel.setText("Genome: " + selectedAnimal.getGenType().toString());
+            energyLabel.setText("Energy: " + selectedAnimal.getEnergy());
+            plantsEatenLabel.setText("Plants eaten: " + selectedAnimal.getPlantsEaten());
+            childrenLabel.setText("Children: " + selectedAnimal.getChildren());
+            ageLabel.setText("Age: " + (selectedAnimal.getEnergy() > 0 ? selectedAnimal.getAge() : "N/A"));
+            deathDayLabel.setText("Death day: " + (selectedAnimal.getEnergy() <= 0 ? selectedAnimal.getAge() : "N/A"));
+        }
     }
 
     private Rectangle getNodeByRowColumnIndex(final int row, final int column, GridPane gridPane) {
