@@ -1,5 +1,6 @@
 package agh.ics.oop;
-
+import java.io.*;
+import java.util.Properties;
 public class SimulationParameters {
     private int mapHeight;
     private int mapWidth;
@@ -129,5 +130,55 @@ public class SimulationParameters {
     }
     public boolean isSaveDataToFile() {
         return saveDataToFile;
+    }
+
+    public void saveToFile(String fileName) throws IOException {
+        Properties properties = new Properties();
+        properties.setProperty("mapHeight", String.valueOf(mapHeight));
+        properties.setProperty("mapWidth", String.valueOf(mapWidth));
+        properties.setProperty("initialPlants", String.valueOf(initialPlants));
+        properties.setProperty("energyPerPlant", String.valueOf(energyPerPlant));
+        properties.setProperty("plantsPerDay", String.valueOf(plantsPerDay));
+        properties.setProperty("initialAnimals", String.valueOf(initialAnimals));
+        properties.setProperty("initialEnergy", String.valueOf(initialEnergy));
+        properties.setProperty("energyToBeFed", String.valueOf(energyToBeFed));
+        properties.setProperty("energyUsedByParents", String.valueOf(energyUsedByParents));
+        properties.setProperty("minMutations", String.valueOf(minMutations));
+        properties.setProperty("maxMutations", String.valueOf(maxMutations));
+        properties.setProperty("mutationVariant", mutationVariant);
+        properties.setProperty("genomeLength", String.valueOf(genomeLength));
+        properties.setProperty("energyLost", String.valueOf(energyLost));
+        properties.setProperty("mapType", mapType);
+        properties.setProperty("saveDataToFile", String.valueOf(saveDataToFile));
+
+        try (FileOutputStream fos = new FileOutputStream(fileName)) {
+            properties.store(fos, "Simulation Parameters");
+        }
+    }
+
+    public static SimulationParameters loadFromFile(String fileName) throws IOException {
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream(fileName)) {
+            properties.load(fis);
+        }
+
+        return new SimulationParameters(
+                Integer.parseInt(properties.getProperty("mapHeight")),
+                Integer.parseInt(properties.getProperty("mapWidth")),
+                Integer.parseInt(properties.getProperty("initialPlants")),
+                Integer.parseInt(properties.getProperty("energyPerPlant")),
+                Integer.parseInt(properties.getProperty("plantsPerDay")),
+                Integer.parseInt(properties.getProperty("initialAnimals")),
+                Integer.parseInt(properties.getProperty("initialEnergy")),
+                Integer.parseInt(properties.getProperty("energyToBeFed")),
+                Integer.parseInt(properties.getProperty("energyUsedByParents")),
+                Integer.parseInt(properties.getProperty("minMutations")),
+                Integer.parseInt(properties.getProperty("maxMutations")),
+                properties.getProperty("mutationVariant"),
+                Integer.parseInt(properties.getProperty("genomeLength")),
+                Integer.parseInt(properties.getProperty("energyLost")),
+                properties.getProperty("mapType"),
+                Boolean.parseBoolean(properties.getProperty("saveDataToFile"))
+        );
     }
 }

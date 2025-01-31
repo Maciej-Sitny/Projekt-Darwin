@@ -6,6 +6,8 @@ import javafx.application.Platform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class
 Simulation implements Runnable {
@@ -219,5 +221,16 @@ Simulation implements Runnable {
             }
         }
     }
+    public ArrayList<Integer> mostPopularGen(){
+        Map<ArrayList<Integer>, Integer> genTypeCounter = new HashMap<>();
+        for (Animal animal : animals) {
+            ArrayList<Integer> genType = animal.getGenType();
+            genTypeCounter.put(genType, genTypeCounter.getOrDefault(genType, 0) + 1);
+        }
+        return genTypeCounter.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
 
+    }
 }

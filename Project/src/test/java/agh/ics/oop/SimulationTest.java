@@ -14,7 +14,7 @@ public class SimulationTest {
 
     @BeforeEach
     void setUp() {
-        parameters = new SimulationParameters(10, 10, 20, 20, 3, 5, 100, 50, 25, 1, 2 , "Podmianka", 4, 3,"Round Globe");
+        parameters = new SimulationParameters(10, 10, 20, 20, 3, 5, 100, 50, 25, 1, 2 , "Podmianka", 4, 3,"Round Globe",false);
         map = new Map(parameters);
         map.growPlant(20);
         startPositions = List.of(new Vector2d(2, 2), new Vector2d(3, 3), new Vector2d(2, 2));

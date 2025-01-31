@@ -212,9 +212,9 @@ public class Animal implements WorldElement {
         }
 
         ArrayList<Integer> newGenType = new ArrayList<>();
-        if (parameters.getMutationVariant().equals("Pełna losowość")) {
+        if (parameters.getMutationVariant().equals("Full randomness")) {
             newGenType = mutationFullRandomness(genType);
-        } else if (parameters.getMutationVariant().equals("Podmianka")) {
+        } else if (parameters.getMutationVariant().equals("Replacement")) {
             newGenType = mutationSwap(genType);
         }
         this.removeEnergy(this.parameters.getEnergyUsedByParents());

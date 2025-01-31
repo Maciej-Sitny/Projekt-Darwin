@@ -11,8 +11,9 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
+import java.util.HashMap;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SimulationPresenter extends Application {
     private SimulationParameters parameters;
@@ -27,6 +28,7 @@ public class SimulationPresenter extends Application {
     private Label descendantsLabel;
     private Label ageLabel;
     private Label deathDayLabel;
+    private Label mostPopularGenLabel; // Add this field to SimulationPresenter
 
     @Override
     public void start(Stage primaryStage) {
@@ -59,8 +61,8 @@ public class SimulationPresenter extends Application {
 
         grid.add(new Label("Mutation Variant:"), 0, 14);
         ComboBox<String> mutationVariant = new ComboBox<>();
-        mutationVariant.getItems().addAll("Pełna losowość", "Podmianka");
-        mutationVariant.setValue("Pełna losowość");
+        mutationVariant.getItems().addAll("Full randomness", "Replacement");
+        mutationVariant.setValue("Full randomness");
         grid.add(mutationVariant, 1, 14);
 
         CheckBox saveDataCheckBox = new CheckBox("Save data to file");
@@ -194,6 +196,7 @@ public class SimulationPresenter extends Application {
     }
 
     public void drawMap() {
+        ArrayList<Integer> mostPopularGen = simulation.mostPopularGen();
         GridPane mapGrid = new GridPane();
         mapGrid.setGridLinesVisible(true);
         mapGrid.setAlignment(Pos.CENTER);
@@ -222,15 +225,20 @@ public class SimulationPresenter extends Application {
             Vector2d position = animal.getPosition();
             Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
             if (cell != null) {
-                if (animal.getAge() == 1) {
-                    cell.setFill(Color.BLUE);
+                if (!simulation.running() && animal.getGenType().equals(mostPopularGen)) {
+                    System.out.println("ELO");
+                    cell.setFill(Color.ORANGE); // Highlight animals with the most popular genType when stopped
                 } else {
-                    int maxEnergy = parameters.getInitialEnergy();
-                    int energy = Math.max(0, Math.min(animal.getEnergy(), maxEnergy));
-                    double intensity = (double) energy / maxEnergy;
-                    int redValue = (int) (255 * intensity);
-                    Color dynamicColor = Color.rgb(redValue, 0, 0);
-                    cell.setFill(dynamicColor);
+                    if (animal.getAge() == 1) {
+                        cell.setFill(Color.BLUE);
+                    } else {
+                        int maxEnergy = parameters.getInitialEnergy();
+                        int energy = Math.max(0, Math.min(animal.getEnergy(), maxEnergy));
+                        double intensity = (double) energy / maxEnergy;
+                        int redValue = (int) (255 * intensity);
+                        Color dynamicColor = Color.rgb(redValue, 0, 0);
+                        cell.setFill(dynamicColor);
+                    }
                 }
 
                 cell.setOnMouseClicked(event -> {
@@ -238,9 +246,7 @@ public class SimulationPresenter extends Application {
                     energyLabel.setText("Energy: " + animal.getEnergy());
                     plantsEatenLabel.setText("Plants eaten: " + animal.getPlantsEaten());
                     childrenLabel.setText("Children: " + animal.getChildren());
-//                    descendantsLabel.setText("Descendants: " + animal.getDescendants());
                     ageLabel.setText("Age: " + (animal.getEnergy() > 0 ? animal.getAge() : "N/A"));
-//                    deathDayLabel.setText("Death day: " + (animal.getEnergy() <= 0 ? animal.getDeathDay() : "N/A"));
                 });
             }
         }
@@ -252,6 +258,7 @@ public class SimulationPresenter extends Application {
         descendantsLabel = new Label("Descendants: ");
         ageLabel = new Label("Age: ");
         deathDayLabel = new Label("Death day: ");
+        mostPopularGenLabel = new Label("Most popular genType: "); // Initialize the label
 
         int numberOfPlants = simulation.getMap().getPlantsPositions().size();
         Label plantCountLabel = new Label("Number of plants: " + numberOfPlants);
@@ -272,7 +279,12 @@ public class SimulationPresenter extends Application {
         Label averageDeadAgeLabel = new Label("Average age of dead animals: " + averageDeadAge);
 
         Button stopButton = new Button("Stop");
-        stopButton.setOnAction(e -> simulation.stop());
+        stopButton.setOnAction(e -> {
+            simulation.stop();
+            drawMap();
+            mostPopularGenLabel.setText("Most popular genType: " + simulation.mostPopularGen().toString());
+
+        });
 
         Button resumeButton = new Button("Resume");
         resumeButton.setOnAction(e -> {
@@ -282,7 +294,7 @@ public class SimulationPresenter extends Application {
             }
         });
 
-        VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeFieldsLabel, averageEnergyLabel, averageDeadAgeLabel);
+        VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeFieldsLabel, averageEnergyLabel, averageDeadAgeLabel, mostPopularGenLabel);
         leftStats.setAlignment(Pos.CENTER);
 
         VBox rightStats = new VBox(10, genomeLabel, energyLabel, plantsEatenLabel, childrenLabel, descendantsLabel, ageLabel, deathDayLabel, stopButton, resumeButton);

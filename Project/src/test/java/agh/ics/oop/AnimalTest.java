@@ -15,7 +15,7 @@ public class AnimalTest {
 
     @BeforeEach
     void setUp() {
-        parameters = new SimulationParameters(10, 10, 20, 20, 3, 5, 100, 50, 25, 1, 2 , "Podmianka", 4, 3,"Round Globe");
+        parameters = new SimulationParameters(10, 10, 20, 20, 3, 5, 100, 50, 25, 1, 2 , "Podmianka", 4, 3,"Round Globe",false);
         animal = new Animal(new Vector2d(2, 2), parameters);
         moveValidator = new Map(parameters);
     }
