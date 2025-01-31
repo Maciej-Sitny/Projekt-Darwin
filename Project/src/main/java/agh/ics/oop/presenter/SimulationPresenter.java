@@ -316,6 +316,11 @@ public class SimulationPresenter extends Application {
         int numberOfDeadAnimals = simulation.getAllDeadAnimals().size();
         double averageDeadAge = numberOfDeadAnimals > 0 ? Math.round((double) totalDeadAge / numberOfDeadAnimals*100.0)/100.0 : 0;
         Label averageDeadAgeLabel = new Label("Average age of dead animals: " + averageDeadAge);
+        int totalNumberChildren = simulation.getAnimals().stream().mapToInt(Animal::getChildren).sum();
+        int numberOfLivingAnimals = simulation.getAnimals().size();
+        double averageNumberOfChildren = totalNumberChildren > 0 ? Math.round((double) totalNumberChildren / numberOfLivingAnimals*100.0)/100.0 : 0;
+
+        Label averageChildNumberLabel = new Label("Average number of children " + averageNumberOfChildren);
 
         Button stopButton = new Button("Stop");
         stopButton.setOnAction(e -> {
@@ -342,7 +347,7 @@ public class SimulationPresenter extends Application {
             }).start();
         });
 
-        VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeFieldsLabel, averageEnergyLabel, averageDeadAgeLabel, mostPopularGenLabel);
+        VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeFieldsLabel, averageEnergyLabel, averageDeadAgeLabel,averageChildNumberLabel, mostPopularGenLabel);
         leftStats.setAlignment(Pos.CENTER);
 
         VBox rightStats = new VBox(10, genomeLabel, energyLabel, plantsEatenLabel, childrenLabel, ageLabel, deathDayLabel, stopButton, resumeButton);
