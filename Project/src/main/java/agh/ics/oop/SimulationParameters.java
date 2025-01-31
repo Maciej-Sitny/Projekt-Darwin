@@ -15,9 +15,9 @@ public class SimulationParameters {
     private String mutationVariant;
     private int genomeLength;
     private int energyLost;
-    private int poleDistance;
+    private String mapType;
 
-    public SimulationParameters(int mapHeight, int mapWidth, int initialPlants, int energyPerPlant, int plantsPerDay, int initialAnimals, int initialEnergy, int energyToBeFed, int energyUsedByParents, int minMutations, int maxMutations, String mutationVariant, int genomeLength, int energyLost, int poleDistance) {
+    public SimulationParameters(int mapHeight, int mapWidth, int initialPlants, int energyPerPlant, int plantsPerDay, int initialAnimals, int initialEnergy, int energyToBeFed, int energyUsedByParents, int minMutations, int maxMutations, String mutationVariant, int genomeLength, int energyLost, String mapType) {
         this.mapHeight = mapHeight;
         this.mapWidth = mapWidth;
         this.initialPlants = initialPlants;
@@ -32,7 +32,7 @@ public class SimulationParameters {
         this.mutationVariant = mutationVariant;
         this.genomeLength = genomeLength;
         this.energyLost = energyLost;
-        this.poleDistance = poleDistance;
+        this.mapType = mapType;
     }
 
 
@@ -120,10 +120,10 @@ public class SimulationParameters {
     public void setEnergyLost(int energyLost) {
         this.energyLost = energyLost;
     }
-    public int getPoleDistance() {
-        return poleDistance;
+    public String getMapType() {
+        return mapType;
     }
-    public void setPoleDistance(int poleDistance) {
-        this.poleDistance = poleDistance;
+    public void setMapType(String mapType) {
+        this.mapType = mapType;
     }
 }

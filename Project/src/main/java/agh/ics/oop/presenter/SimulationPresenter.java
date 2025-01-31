@@ -1,7 +1,6 @@
-package agh.ics.oop.presenter;
-
+package  agh.ics.oop.presenter;
 import agh.ics.oop.*;
-import agh.ics.oop.observers.Observer;
+import agh.ics.oop.Map;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -12,12 +11,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class SimulationPresenter extends Application {
-
     private SimulationParameters parameters;
     private Stage primaryStage;
     private Simulation simulation;
@@ -31,114 +27,159 @@ public class SimulationPresenter extends Application {
         grid.setHgap(10);
         grid.setVgap(10);
 
-        grid.add(new Label("Wysokość mapy:"), 0, 0);
-        TextField mapHeight = new TextField();
-        grid.add(mapHeight, 1, 0);
+        TextField mapHeight = createLabeledTextField(grid, "Map height:", "20", 0);
+        TextField mapWidth = createLabeledTextField(grid, "Map width:", "20", 1);
+        TextField initialPlants = createLabeledTextField(grid, "Starting number of plants:", "100", 2);
+        TextField energyPerPlant = createLabeledTextField(grid, "Energy on eating a plant:", "50", 3);
+        TextField plantsPerDay = createLabeledTextField(grid, "Number of plants grow per day:", "15", 4);
+        TextField initialAnimals = createLabeledTextField(grid, "Starting number of Animal:", "40", 5);
+        TextField initialEnergy = createLabeledTextField(grid, "Starting energy of animal:", "500", 6);
+        TextField energyLost = createLabeledTextField(grid, "Amount of energy animal loses per day:", "40", 7);
+        TextField energyToBeFed = createLabeledTextField(grid, "Energy required for animal to be fed (ready for reproduction):", "300", 8);
+        TextField energyUsedByParents = createLabeledTextField(grid, "Energy given to child from parent:", "150", 9);
+        TextField minMutations = createLabeledTextField(grid, "Minimal number of mutations:", "1", 10);
+        TextField maxMutations = createLabeledTextField(grid, "Maximal number of mutations:", "2", 11);
+        TextField genomeLength = createLabeledTextField(grid, "Genome Length:", "2", 12);
 
-        grid.add(new Label("Szerokość mapy:"), 0, 1);
-        TextField mapWidth = new TextField();
-        grid.add(mapWidth, 1, 1);
+
+        grid.add(new Label("Map Type:"), 0, 13);
+        ComboBox<String> mapType = new ComboBox<>();
+        mapType.getItems().addAll("Round Globe", "Poles");
+        mapType.setValue("Round Globe");
+        grid.add(mapType, 1, 13);
 
 
-        grid.add(new Label("Początkowa liczba roślin:"), 0, 2);
-        TextField initialPlants = new TextField();
-        grid.add(initialPlants, 1, 2);
-
-        grid.add(new Label("Energia rośliny:"), 0, 3);
-        TextField energyPerPlant = new TextField();
-        grid.add(energyPerPlant, 1, 3);
-
-        grid.add(new Label("Liczba roślin rosnących każdego dnia:"), 0, 4);
-        TextField plantsPerDay = new TextField();
-        grid.add(plantsPerDay, 1, 4);
-
-        grid.add(new Label("Początkowa liczba zwierząt:"), 0, 5);
-        TextField initialAnimals = new TextField();
-        grid.add(initialAnimals, 1, 5);
-
-        grid.add(new Label("Początkowa energia zwierząt:"), 0, 6);
-        TextField initialEnergy = new TextField();
-        grid.add(initialEnergy, 1, 6);
-
-        grid.add(new Label("Ile energii traci zwierzak jednego dnia:"), 0, 7);
-        TextField energyLost = new TextField();
-        grid.add(energyLost, 1, 7);
-
-        grid.add(new Label("Energia, żeby uznać zwierzę za najedzone (gotowe do rozmnażania):"), 0, 8);
-        TextField energyToBeFed = new TextField();
-        grid.add(energyToBeFed, 1, 8);
-
-        grid.add(new Label("Energia zużywana przez rodziców dla dziecka:"), 0, 9);
-        TextField energyUsedByParents = new TextField();
-        grid.add(energyUsedByParents, 1, 9);
-
-        grid.add(new Label("Minimalna liczba mutacji:"), 0, 10);
-        TextField minMutations = new TextField();
-        grid.add(minMutations, 1, 10);
-
-        grid.add(new Label("Maksymalna liczba mutacji:"), 0, 11);
-        TextField maxMutations = new TextField();
-        grid.add(maxMutations, 1, 11);
-
-        grid.add(new Label("Wariant mutacji:"), 0, 12);
+        grid.add(new Label("Mutation Variant:"), 0, 14); // Przenosimy do innego wiersza
         ComboBox<String> mutationVariant = new ComboBox<>();
         mutationVariant.getItems().addAll("Pełna losowość", "Podmianka");
-        grid.add(mutationVariant, 1, 12);
+        mutationVariant.setValue("Pełna losowość");
+        grid.add(mutationVariant, 1, 14);
 
-        grid.add(new Label("Długość genomu (>=4)"), 0, 13);
-        TextField genomeLength = new TextField();
-        genomeLength.setTextFormatter(new TextFormatter<>(change -> {
-            if (change.getControlNewText().matches("\\d*") && (change.getControlNewText().isEmpty() || Integer.parseInt(change.getControlNewText()) >= 4)) {
-                return change;
-            }
-            return null;
-        }));
-        grid.add(genomeLength, 1, 13);
-
-        grid.add(new Label("Odległość bieguna od równika:"), 0, 14);
-        TextField poleDistance = new TextField();
-        grid.add(poleDistance, 1, 14);
-
-        Button submitButton = new Button("OK");
+        Button submitButton = new Button("Start");
         submitButton.setOnAction(e -> {
-            parameters = new SimulationParameters(Integer.parseInt(mapHeight.getText()),
-                    Integer.parseInt(mapWidth.getText()),
-                    Integer.parseInt(initialPlants.getText()),
-                    Integer.parseInt(energyPerPlant.getText()),
-                    Integer.parseInt(plantsPerDay.getText()),
-                    Integer.parseInt(initialAnimals.getText()),
-                    Integer.parseInt(initialEnergy.getText()),
-                    Integer.parseInt(energyToBeFed.getText()),
-                    Integer.parseInt(energyUsedByParents.getText()),
-                    Integer.parseInt(minMutations.getText()),
-                    Integer.parseInt(maxMutations.getText()),
-                    mutationVariant.getValue(),
-                    Integer.parseInt(genomeLength.getText()),
-                    Integer.parseInt(energyLost.getText()),
-                    Integer.parseInt(poleDistance.getText()));
+            if (validateInput(mapHeight, mapWidth, initialPlants, energyPerPlant, plantsPerDay,
+                    initialAnimals, initialEnergy, energyLost, energyToBeFed, energyUsedByParents,
+                    minMutations, maxMutations, genomeLength)) {
 
-            initializeSimulation();
-            new Thread(() -> {
-                simulation.run();
-                System.out.println(simulation.getMap().getPlantsPositions().size());
-                Platform.runLater(() -> {
-                    drawMap();
-                });
-            }).start();
+                parameters = new SimulationParameters(
+                        Integer.parseInt(mapHeight.getText()),
+                        Integer.parseInt(mapWidth.getText()),
+                        Integer.parseInt(initialPlants.getText()),
+                        Integer.parseInt(energyPerPlant.getText()),
+                        Integer.parseInt(plantsPerDay.getText()),
+                        Integer.parseInt(initialAnimals.getText()),
+                        Integer.parseInt(initialEnergy.getText()),
+                        Integer.parseInt(energyToBeFed.getText()),
+                        Integer.parseInt(energyUsedByParents.getText()),
+                        Integer.parseInt(minMutations.getText()),
+                        Integer.parseInt(maxMutations.getText()),
+                        mutationVariant.getValue(),
+                        Integer.parseInt(genomeLength.getText()),
+                        Integer.parseInt(energyLost.getText()),
+                        mapType.getValue()
+                );
+
+                initializeSimulation();
+                new Thread(() -> {
+                    simulation.run();
+                    Platform.runLater(this::drawMap);
+                }).start();
+            }
         });
-        grid.add(submitButton, 1, 15);
 
+        grid.add(submitButton, 1, 15);
         StackPane root = new StackPane(grid);
         Scene scene = new Scene(root, 600, 600);
         primaryStage.setScene(scene);
+
+        primaryStage.setOnCloseRequest(event -> {
+
+            if (simulation != null) {
+                simulation.stop();
+            }
+            System.exit(0);
+        });
+
         primaryStage.show();
+    }
+
+    private TextField createLabeledTextField(GridPane grid, String label, String defaultValue, int row) {
+        grid.add(new Label(label), 0, row);
+        TextField textField = new TextField(defaultValue);
+        grid.add(textField, 1, row);
+        return textField;
+    }
+
+    private boolean validateInput(TextField... fields) {
+        try {
+            int minMut = Integer.parseInt(fields[10].getText());
+            int maxMut = Integer.parseInt(fields[11].getText());
+            int genomeLen = Integer.parseInt(fields[12].getText());
+            int energyToBeFed = Integer.parseInt(fields[8].getText());
+            int energyUsedByParents = Integer.parseInt(fields[9].getText());
+
+            // Sprawdzamy czy wszystkie wartości (oprócz Energy lost per tile away from the equator) są > 0
+            for (int i = 0; i < fields.length - 1; i++) {
+                int value = Integer.parseInt(fields[i].getText());
+                if (value <= 0) {
+                    String fieldName = getFieldName(i);
+                    showAlert(fieldName + " must be greater than 0.");
+                    return false;
+                }
+            }
+
+            // Sprawdzamy warunki dla mutacji
+            if (minMut > maxMut) {
+                showAlert("Minimal number of mutations cannot be greater than maximal number of mutations.");
+                return false;
+            }
+
+            if (maxMut > genomeLen) {
+                showAlert("Maximal number of mutations cannot be greater than Genome Length.");
+                return false;
+            }
+
+            // Sprawdzamy, czy energia wymagana do rozmnażania jest większa niż energia przekazywana potomstwu
+            if (energyToBeFed <= energyUsedByParents) {
+                showAlert("Energy required for reproduction must be greater than energy given to child from parent.");
+                return false;
+            }
+
+            return true;
+        } catch (NumberFormatException e) {
+            showAlert("Please enter valid numeric values.");
+            return false;
+        }
+    }
+
+    // Pomocnicza metoda do wyświetlania odpowiednich nazw pól
+    private String getFieldName(int index) {
+        String[] fieldNames = {
+                "Map height", "Map width", "Starting number of plants",
+                "Energy on eating a plant", "Number of plants grow per day",
+                "Starting number of animals", "Starting energy of animal",
+                "Amount of energy animal loses per day",
+                "Energy required for animal to be fed (ready for reproduction)",
+                "Energy given to child from parent",
+                "Minimal number of mutations", "Maximal number of mutations",
+                "Genome Length"
+        };
+        return fieldNames[index];
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Invalid Input");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void initializeSimulation() {
         List<Vector2d> positions = new ArrayList<>();
         Random random = new Random();
         for (int i = 0; i < parameters.getInitialAnimals(); i++) {
-            positions.add(new Vector2d(random.nextInt(parameters.getMapWidth()+1), random.nextInt(parameters.getMapHeight()+1)));
+            positions.add(new Vector2d(random.nextInt(parameters.getMapWidth()), random.nextInt(parameters.getMapHeight())));
         }
         WorldMap map = new Map(parameters);
 
@@ -250,7 +291,11 @@ public class SimulationPresenter extends Application {
         int numberOfAnimals = simulation.getAnimals().size();
         Label animalCountLabel = new Label("Number of animals: " + numberOfAnimals);
 
-        int numberOfFreeCells = mapHeight * mapWidth - numberOfPlants - numberOfAnimals;
+
+        Set<Vector2d> free = new HashSet<>();
+        free.addAll(simulation.getMap().getPlantsPositions());
+        free.addAll(simulation.getMap().getAnimals().keySet());
+        int numberOfFreeCells = Math.max(0, free.size());
         Label freeCellCountLabel = new Label("Number of free cells: " + numberOfFreeCells);
 
         int totalEnergy = simulation.getAnimals().stream().mapToInt(Animal::getEnergy).sum();

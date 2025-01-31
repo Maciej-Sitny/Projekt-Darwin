@@ -1,7 +1,9 @@
 package agh.ics.oop;
-
+import agh.ics.oop.Plant;
+import agh.ics.oop.Vector2d;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+
 
 class PlantTest {
 
