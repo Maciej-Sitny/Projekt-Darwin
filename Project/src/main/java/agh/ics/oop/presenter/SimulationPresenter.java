@@ -47,8 +47,8 @@ public class SimulationPresenter extends Application {
         primaryStage.setTitle("Simulation");
 
         GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
+        grid.setHgap(5);
+        grid.setVgap(5);
 
         TextField mapHeight = createLabeledTextField(grid, "Map height:", "20", 0);
         TextField mapWidth = createLabeledTextField(grid, "Map width:", "20", 1);
@@ -82,7 +82,7 @@ public class SimulationPresenter extends Application {
         grid.add(saveDataCheckBox, 1, 15);
 
         CheckBox LoadConfiguration = new CheckBox("Loaded Configuration from entrydata");
-        grid.add(LoadConfiguration, 0, 16);
+        grid.add(LoadConfiguration, 1, 16);
 
 
         Button submitButton = new Button("Start");
@@ -140,7 +140,7 @@ public class SimulationPresenter extends Application {
             }
         });
 
-        grid.add(submitButton, 1, 16);
+        grid.add(submitButton, 1, 17);
         StackPane root = new StackPane(grid);
         Scene scene = new Scene(root, 600, 600);
         primaryStage.setScene(scene);
@@ -351,14 +351,13 @@ public class SimulationPresenter extends Application {
         int totalNumberChildren = simulation.getAnimals().stream().mapToInt(Animal::getChildren).sum();
         int numberOfLivingAnimals = simulation.getAnimals().size();
         double averageNumberOfChildren = totalNumberChildren > 0 ? Math.round((double) totalNumberChildren / numberOfLivingAnimals*100.0)/100.0 : 0;
-
+        mostPopularGenLabel.setText("Most popular genType: " + simulation.mostPopularGen().toString());
         Label averageChildNumberLabel = new Label("Average number of children " + averageNumberOfChildren);
 
         Button stopButton = new Button("Stop");
         stopButton.setOnAction(e -> {
             simulation.stop();
             drawMap();
-            mostPopularGenLabel.setText("Most popular genType: " + simulation.mostPopularGen().toString());
         });
 
         Button resumeButton = new Button("Resume");

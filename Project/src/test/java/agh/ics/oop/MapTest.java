@@ -87,4 +87,26 @@ class MapTest {
         assertTrue(map.areThereAnimals(new Vector2d(2, 2)));
         assertFalse(map.areThereAnimals(new Vector2d(7, 7)));
     }
+
+    @Test
+    void testCanMoveToGlobe(){
+        assertFalse( map.canMoveTo(new Vector2d(10,10)));
+        assertTrue(map.canMoveTo(new Vector2d(9,9)));
+        assertTrue(map.canMoveTo(new Vector2d(10,9)));
+        assertTrue(map.canMoveTo(new Vector2d(-1,9)));
+        assertFalse(map.canMoveTo(new Vector2d(8,-1)));
+    }
+
+    @Test
+    void testCanMoveToPoles(){
+        parameters = new SimulationParameters(10, 10, 20, 10, 5, 2, 3, 1000, 10, 1, 3, "Full randomness", 7, 2, "Poles",Boolean.FALSE);
+        map = new Map(parameters);
+        assertFalse(map.canMoveTo(new Vector2d(10,10)));
+        assertTrue(map.canMoveTo(new Vector2d(9,9)));
+        assertFalse(map.canMoveTo(new Vector2d(10,9)));
+        assertFalse(map.canMoveTo(new Vector2d(-1,9)));
+        assertFalse(map.canMoveTo(new Vector2d(8,-1)));
+    }
+
+
 }
