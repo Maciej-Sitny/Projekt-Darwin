@@ -94,7 +94,7 @@ public class SimulationTest {
     void testCollectDailyData() {
         List<String> dailyData = simulation.collectDailyData(1);
 
-        assertEquals(6, dailyData.size()); // Powinno być 6 danych (dzień, liczba zwierząt, liczba roślin itd.)
+        assertEquals(7, dailyData.size()); // Powinno być 7 danych (dzień, liczba zwierząt, liczba roślin itd.)
         assertEquals("1", dailyData.get(0)); // Dzień symulacji
     }
 
