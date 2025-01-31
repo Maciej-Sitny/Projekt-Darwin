@@ -29,6 +29,7 @@ public class SimulationPresenter extends Application {
     // Declare labels at the class level
     private Label energyLabel = new Label("Energy: ");
     private Label genomeLabel = new Label("Genome: ");
+    private Label genomeNumberLabel = new Label("Genome Number: ");
     private Label plantsEatenLabel = new Label("Plants eaten: ");
     private Label childrenLabel = new Label("Children: ");
     private Label descendantsLabel = new Label("Descendants: ");
@@ -350,7 +351,7 @@ public class SimulationPresenter extends Application {
         VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeFieldsLabel, averageEnergyLabel, averageDeadAgeLabel,averageChildNumberLabel, mostPopularGenLabel);
         leftStats.setAlignment(Pos.CENTER);
 
-        VBox rightStats = new VBox(10, genomeLabel, energyLabel, plantsEatenLabel, childrenLabel, ageLabel, deathDayLabel, stopButton, resumeButton);
+        VBox rightStats = new VBox(10, genomeLabel, genomeNumberLabel, energyLabel, plantsEatenLabel, childrenLabel, ageLabel, deathDayLabel, stopButton, resumeButton);
         rightStats.setAlignment(Pos.CENTER);
 
         HBox statsLayout = new HBox(20, leftStats, rightStats);
@@ -392,6 +393,7 @@ public class SimulationPresenter extends Application {
     private void updateAnimalStatistics() {
         if (selectedAnimal != null) {
             genomeLabel.setText("Genome: " + selectedAnimal.getGenType().toString());
+            genomeNumberLabel.setText("Genome Number: " + selectedAnimal.getGenNumber());
             energyLabel.setText("Energy: " + selectedAnimal.getEnergy());
             plantsEatenLabel.setText("Plants eaten: " + selectedAnimal.getPlantsEaten());
             childrenLabel.setText("Children: " + selectedAnimal.getChildren());
