@@ -16,8 +16,8 @@ public class SimulationParameters {
     private int genomeLength;
     private int energyLost;
     private String mapType;
-
-    public SimulationParameters(int mapHeight, int mapWidth, int initialPlants, int energyPerPlant, int plantsPerDay, int initialAnimals, int initialEnergy, int energyToBeFed, int energyUsedByParents, int minMutations, int maxMutations, String mutationVariant, int genomeLength, int energyLost, String mapType) {
+    private boolean saveDataToFile;
+    public SimulationParameters(int mapHeight, int mapWidth, int initialPlants, int energyPerPlant, int plantsPerDay, int initialAnimals, int initialEnergy, int energyToBeFed, int energyUsedByParents, int minMutations, int maxMutations, String mutationVariant, int genomeLength, int energyLost, String mapType, Boolean saveDataToFile) {
         this.mapHeight = mapHeight;
         this.mapWidth = mapWidth;
         this.initialPlants = initialPlants;
@@ -33,6 +33,7 @@ public class SimulationParameters {
         this.genomeLength = genomeLength;
         this.energyLost = energyLost;
         this.mapType = mapType;
+        this.saveDataToFile = saveDataToFile;
     }
 
 
@@ -125,5 +126,8 @@ public class SimulationParameters {
     }
     public void setMapType(String mapType) {
         this.mapType = mapType;
+    }
+    public boolean isSaveDataToFile() {
+        return saveDataToFile;
     }
 }

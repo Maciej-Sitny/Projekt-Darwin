@@ -40,11 +40,13 @@ Simulation implements Runnable {
         this.map = map;
         this.parameters = parameters;
 
-        List<String> headers = List.of("Day", "Total Animals", "Total Plants", "Average Energy", "Number of Free Cells", "Average Age of Dead Animals");
-        try {
-            csvWriter = new CSVWriter("simulation_data.csv", headers);
-        } catch (IOException e) {
-            System.err.println("Failed to initialize CSV writer: " + e.getMessage());
+        if (parameters.isSaveDataToFile()) {
+            List<String> headers = List.of("Day", "Total Animals", "Total Plants", "Average Energy", "Number of Free Cells", "Average Age of Dead Animals");
+            try {
+                csvWriter = new CSVWriter("simulation_data.csv", headers);
+            } catch (IOException e) {
+                System.err.println("Failed to initialize CSV writer: " + e.getMessage());
+            }
         }
 
     }
@@ -141,21 +143,28 @@ Simulation implements Runnable {
 
     public void stop() {
         isRunning = false;
-        try {
-            csvWriter.close();
-        } catch (IOException e) {
-            System.err.println("Failed to close CSV writer: " + e.getMessage());
+        if (csvWriter != null) {
+            try {
+                csvWriter.close();
+            } catch (IOException e) {
+                System.err.println("Failed to close CSV writer: " + e.getMessage());
+            }
         }
+
     }
 
     public void resume() {
         isRunning = true;
-        try {
-            csvWriter.open();
-        } catch (IOException e) {
-            System.err.println("Failed to open CSV writer: " + e.getMessage());
+        if (csvWriter != null) {
+            try {
+                csvWriter.open();
+            } catch (IOException e) {
+                System.err.println("Failed to open CSV writer: " + e.getMessage());
+            }
         }
+
     }
+
 
 
     public void run() {
@@ -192,11 +201,13 @@ Simulation implements Runnable {
                 }
             });
 
-            try {
-                List<String> dailyData = collectDailyData(day);
-                csvWriter.writeLine(dailyData);
-            } catch (IOException e) {
-                System.err.println("Failed to write to CSV: " + e.getMessage());
+            if (parameters.isSaveDataToFile()) {
+                try {
+                    List<String> dailyData = collectDailyData(day);
+                    csvWriter.writeLine(dailyData);
+                } catch (IOException e) {
+                    System.err.println("Failed to write to CSV: " + e.getMessage());
+                }
             }
 
             day++;
