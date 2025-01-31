@@ -396,7 +396,10 @@ public class SimulationPresenter extends Application {
             plantsEatenLabel.setText("Plants eaten: " + selectedAnimal.getPlantsEaten());
             childrenLabel.setText("Children: " + selectedAnimal.getChildren());
             ageLabel.setText("Age: " + (selectedAnimal.getEnergy() > 0 ? selectedAnimal.getAge() : "N/A"));
-            deathDayLabel.setText("Death day: " + (selectedAnimal.getEnergy() <= 0 ? selectedAnimal.getAge() : "N/A"));
+            if (selectedAnimal.getEnergy() <= 0 && selectedAnimal.getDeathDay() == null){
+                selectedAnimal.setDeathDay(simulation.getDay());
+            }
+            deathDayLabel.setText("Death day: " + (selectedAnimal.getEnergy() <= 0 ? selectedAnimal.getDeathDay() : "N/A"));
         }
     }
 
