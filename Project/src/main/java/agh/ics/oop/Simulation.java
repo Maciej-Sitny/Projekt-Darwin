@@ -6,6 +6,8 @@ import javafx.application.Platform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class
 Simulation implements Runnable {
@@ -40,11 +42,13 @@ Simulation implements Runnable {
         this.map = map;
         this.parameters = parameters;
 
-        List<String> headers = List.of("Day", "Total Animals", "Total Plants", "Average Energy", "Number of Free Cells", "Average Age of Dead Animals");
-        try {
-            csvWriter = new CSVWriter("simulation_data.csv", headers);
-        } catch (IOException e) {
-            System.err.println("Failed to initialize CSV writer: " + e.getMessage());
+        if (parameters.isSaveDataToFile()) {
+            List<String> headers = List.of("Day", "Total Animals", "Total Plants", "Average Energy", "Number of Free Cells", "Average Age of Dead Animals");
+            try {
+                csvWriter = new CSVWriter("simulation_data.csv", headers);
+            } catch (IOException e) {
+                System.err.println("Failed to initialize CSV writer: " + e.getMessage());
+            }
         }
 
     }
@@ -141,21 +145,28 @@ Simulation implements Runnable {
 
     public void stop() {
         isRunning = false;
-        try {
-            csvWriter.close();
-        } catch (IOException e) {
-            System.err.println("Failed to close CSV writer: " + e.getMessage());
+        if (csvWriter != null) {
+            try {
+                csvWriter.close();
+            } catch (IOException e) {
+                System.err.println("Failed to close CSV writer: " + e.getMessage());
+            }
         }
+
     }
 
     public void resume() {
         isRunning = true;
-        try {
-            csvWriter.open();
-        } catch (IOException e) {
-            System.err.println("Failed to open CSV writer: " + e.getMessage());
+        if (csvWriter != null) {
+            try {
+                csvWriter.open();
+            } catch (IOException e) {
+                System.err.println("Failed to open CSV writer: " + e.getMessage());
+            }
         }
+
     }
+
 
 
     public void run() {
@@ -192,11 +203,13 @@ Simulation implements Runnable {
                 }
             });
 
-            try {
-                List<String> dailyData = collectDailyData(day);
-                csvWriter.writeLine(dailyData);
-            } catch (IOException e) {
-                System.err.println("Failed to write to CSV: " + e.getMessage());
+            if (parameters.isSaveDataToFile()) {
+                try {
+                    List<String> dailyData = collectDailyData(day);
+                    csvWriter.writeLine(dailyData);
+                } catch (IOException e) {
+                    System.err.println("Failed to write to CSV: " + e.getMessage());
+                }
             }
 
             day++;
@@ -208,5 +221,16 @@ Simulation implements Runnable {
             }
         }
     }
+    public ArrayList<Integer> mostPopularGen(){
+        Map<ArrayList<Integer>, Integer> genTypeCounter = new HashMap<>();
+        for (Animal animal : animals) {
+            ArrayList<Integer> genType = animal.getGenType();
+            genTypeCounter.put(genType, genTypeCounter.getOrDefault(genType, 0) + 1);
+        }
+        return genTypeCounter.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
 
+    }
 }

@@ -28,6 +28,10 @@ public class Map implements WorldMap {
         this.mapType = parameters.getMapType();
     }
 
+    public int getEquatorWidth() {
+        return equatorWidth;
+    }
+
     public boolean canMoveTo(Vector2d position) {
         if (mapType.equals("Poles"))
         {

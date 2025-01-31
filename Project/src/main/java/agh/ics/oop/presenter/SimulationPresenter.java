@@ -1,4 +1,5 @@
-package  agh.ics.oop.presenter;
+package agh.ics.oop.presenter;
+
 import agh.ics.oop.*;
 import agh.ics.oop.Map;
 import javafx.application.Application;
@@ -10,13 +11,26 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
+import java.util.HashMap;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SimulationPresenter extends Application {
     private SimulationParameters parameters;
     private Stage primaryStage;
     private Simulation simulation;
+    private Animal selectedAnimal;
+    private Animal previousSelectedAnimal;
+
+    // Declare labels at the class level
+    private Label energyLabel = new Label("Energy: ");
+    private Label genomeLabel = new Label("Genome: ");
+    private Label plantsEatenLabel = new Label("Plants eaten: ");
+    private Label childrenLabel = new Label("Children: ");
+    private Label descendantsLabel = new Label("Descendants: ");
+    private Label ageLabel = new Label("Age: ");
+    private Label deathDayLabel = new Label("Death day: ");
+    private Label mostPopularGenLabel = new Label("Most popular genType: "); // Initialize the label
 
     @Override
     public void start(Stage primaryStage) {
@@ -41,20 +55,20 @@ public class SimulationPresenter extends Application {
         TextField maxMutations = createLabeledTextField(grid, "Maximal number of mutations:", "2", 11);
         TextField genomeLength = createLabeledTextField(grid, "Genome Length:", "2", 12);
 
-
         grid.add(new Label("Map Type:"), 0, 13);
         ComboBox<String> mapType = new ComboBox<>();
         mapType.getItems().addAll("Round Globe", "Poles");
         mapType.setValue("Round Globe");
         grid.add(mapType, 1, 13);
 
-
-        grid.add(new Label("Mutation Variant:"), 0, 14); // Przenosimy do innego wiersza
+        grid.add(new Label("Mutation Variant:"), 0, 14);
         ComboBox<String> mutationVariant = new ComboBox<>();
-        mutationVariant.getItems().addAll("Pełna losowość", "Podmianka");
-        mutationVariant.setValue("Pełna losowość");
+        mutationVariant.getItems().addAll("Full randomness", "Replacement");
+        mutationVariant.setValue("Full randomness");
         grid.add(mutationVariant, 1, 14);
 
+        CheckBox saveDataCheckBox = new CheckBox("Save data to file");
+        grid.add(saveDataCheckBox, 1, 15);
         Button submitButton = new Button("Start");
         submitButton.setOnAction(e -> {
             if (validateInput(mapHeight, mapWidth, initialPlants, energyPerPlant, plantsPerDay,
@@ -76,7 +90,8 @@ public class SimulationPresenter extends Application {
                         mutationVariant.getValue(),
                         Integer.parseInt(genomeLength.getText()),
                         Integer.parseInt(energyLost.getText()),
-                        mapType.getValue()
+                        mapType.getValue(),
+                        saveDataCheckBox.isSelected() // Pass the value of the CheckBox
                 );
 
                 initializeSimulation();
@@ -87,13 +102,12 @@ public class SimulationPresenter extends Application {
             }
         });
 
-        grid.add(submitButton, 1, 15);
+        grid.add(submitButton, 1, 16);
         StackPane root = new StackPane(grid);
         Scene scene = new Scene(root, 600, 600);
         primaryStage.setScene(scene);
 
         primaryStage.setOnCloseRequest(event -> {
-
             if (simulation != null) {
                 simulation.stop();
             }
@@ -118,7 +132,6 @@ public class SimulationPresenter extends Application {
             int energyToBeFed = Integer.parseInt(fields[8].getText());
             int energyUsedByParents = Integer.parseInt(fields[9].getText());
 
-            // Sprawdzamy czy wszystkie wartości (oprócz Energy lost per tile away from the equator) są > 0
             for (int i = 0; i < fields.length - 1; i++) {
                 int value = Integer.parseInt(fields[i].getText());
                 if (value <= 0) {
@@ -128,7 +141,6 @@ public class SimulationPresenter extends Application {
                 }
             }
 
-            // Sprawdzamy warunki dla mutacji
             if (minMut > maxMut) {
                 showAlert("Minimal number of mutations cannot be greater than maximal number of mutations.");
                 return false;
@@ -139,7 +151,6 @@ public class SimulationPresenter extends Application {
                 return false;
             }
 
-            // Sprawdzamy, czy energia wymagana do rozmnażania jest większa niż energia przekazywana potomstwu
             if (energyToBeFed <= energyUsedByParents) {
                 showAlert("Energy required for reproduction must be greater than energy given to child from parent.");
                 return false;
@@ -152,7 +163,6 @@ public class SimulationPresenter extends Application {
         }
     }
 
-    // Pomocnicza metoda do wyświetlania odpowiednich nazw pól
     private String getFieldName(int index) {
         String[] fieldNames = {
                 "Map height", "Map width", "Starting number of plants",
@@ -187,32 +197,39 @@ public class SimulationPresenter extends Application {
         simulation = new Simulation(positions, map, parameters.getInitialEnergy(), parameters.getGenomeLength(), parameters.getEnergyPerPlant(), parameters.getPlantsPerDay(), this, parameters);
     }
 
+    private void highlightSelectedAnimal(GridPane mapGrid) {
+        if (selectedAnimal != null) {
+            Vector2d position = selectedAnimal.getPosition();
+            Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
+            if (cell != null) {
+                cell.setFill(Color.PURPLE); // Highlight the selected animal
+            }
+        }
+    }
+
+
+
     public void drawMap() {
+        ArrayList<Integer> mostPopularGen = simulation.mostPopularGen();
         GridPane mapGrid = new GridPane();
         mapGrid.setGridLinesVisible(true);
         mapGrid.setAlignment(Pos.CENTER);
-        Animal currentAnimal;
+
         int mapHeight = parameters.getMapHeight();
         int mapWidth = parameters.getMapWidth();
-
-
+        int equatorWidth = mapHeight * 20 / 100;
         for (int i = 0; i < mapHeight; i++) {
             for (int j = 0; j < mapWidth; j++) {
                 Rectangle cell = new Rectangle(20, 20);
-                cell.setStroke(Color.BLACK); // Ustawiamy obramowanie
-                cell.setFill(Color.GREEN); // Ustawiamy kolor tła na zielony
-
-
-                cell.setOnMouseEntered(event -> {
-                    cell.setFill(Color.LIGHTBLUE); // Zmieniamy kolor na podświetlenie
-                });
-
-
-                cell.setOnMouseExited(event -> {
-                    cell.setFill(Color.GREEN); // Przywracamy oryginalny kolor
-                });
-
-                mapGrid.add(cell, j, i); // Dodajemy prostokąt do siatki
+                cell.setStroke(Color.BLACK);
+                if (i >= (int)mapHeight/2 - (int)equatorWidth/2 && i <= (int)mapHeight/2 + (int)equatorWidth/2){
+                    cell.setFill(Color.DARKGREEN);
+                }
+                else {
+                    cell.setFill(Color.GREEN);
+                }
+                cell.getStyleClass().add("cell");
+                mapGrid.add(cell, j, i);
             }
         }
 
@@ -220,102 +237,66 @@ public class SimulationPresenter extends Application {
             Rectangle cell = (Rectangle) getNodeByRowColumnIndex(plantPosition.getY(), plantPosition.getX(), mapGrid);
             if (cell != null) {
                 cell.setFill(Color.YELLOW);
-                cell.setOnMouseEntered(event -> {
-                    cell.setFill(Color.LIGHTYELLOW); // Zmieniamy kolor na podświetlenie
-                });
-
-
-                cell.setOnMouseExited(event -> {
-                    cell.setFill(Color.YELLOW); // Przywracamy oryginalny kolor
-                });
             }
         }
-
-
-        Label genomeLabel = new Label("Genome: ");
-        Label energyLabel = new Label("Energy: ");
-        Label plantsEatenLabel = new Label("Plants eaten: ");
-        Label childrenLabel = new Label("Children: ");
-        Label ageLabel = new Label("Age: ");
-        Label deathDayLabel = new Label("Death day: ");
 
         for (Animal animal : simulation.getAnimals()) {
             Vector2d position = animal.getPosition();
             Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
             if (cell != null) {
-                if (animal.getAge() == 1) {
-                    cell.setFill(Color.BLUE);
-                    cell.setOnMouseEntered(event -> {
-                        cell.setFill(Color.LIGHTBLUE); // Zmieniamy kolor na podświetlenie
-                    });
-
-
-                    cell.setOnMouseExited(event -> {
-                        cell.setFill(Color.BLUE); // Przywracamy oryginalny kolor
-                    });
+                if (!simulation.running() && animal.getGenType().equals(mostPopularGen)) {
+                    cell.setFill(Color.ORANGE); // Highlight animals with the most popular genType when stopped
                 } else {
-                    int maxEnergy = parameters.getInitialEnergy();
-                    int energy = Math.max(0, Math.min(animal.getEnergy(), maxEnergy));
-                    double intensity = (double) energy / maxEnergy;
-                    int redValue = (int) (255 * intensity);
-
-
-                    Color dynamicColor = Color.rgb(redValue, 0, 0);
-                    cell.setFill(dynamicColor);
-                    cell.setOnMouseEntered(event -> {
-                        cell.setFill(Color.PINK); // Zmieniamy kolor na podświetlenie
-                    });
-
-                    // Obsługa zdarzenia opuszczenia komórki
-                    cell.setOnMouseExited(event -> {
-                        cell.setFill(dynamicColor); // Przywracamy oryginalny kolor
-                    });
+                    if (animal.getAge() == 1) {
+                        cell.setFill(Color.BLUE);
+                    } else {
+                        int maxEnergy = parameters.getInitialEnergy();
+                        int energy = Math.max(0, Math.min(animal.getEnergy(), maxEnergy));
+                        double intensity = (double) energy / maxEnergy;
+                        int redValue = (int) (255 * intensity);
+                        Color dynamicColor = Color.rgb(redValue, 0, 0);
+                        cell.setFill(dynamicColor);
+                    }
                 }
-//                cell.setOnMouseClicked(event -> {
-////                    Observer obs =animal.getObserver();
-////                    genomeLabel.setText("Genome: " + obs.getGenType().toString());
-////                    energyLabel.setText("Energy: " + obs.getEnergy());
-////                    plantsEatenLabel.setText("Plants eaten: " + obs.getPlantsEaten());
-////                    childrenLabel.setText("Children: " + obs.getChildren());
-////                    ageLabel.setText("Age: " + (obs.getEnergy() > 0 ? obs.getAge() : "N/A"));
-//                    currentAnimal = animal;
-//                });
+
+                cell.setOnMouseClicked(event -> {
+                    if (previousSelectedAnimal != null) {
+                        resetAnimalColor(previousSelectedAnimal, mapGrid);
+                    }
+                    selectedAnimal = animal;
+                    previousSelectedAnimal = animal;
+                    updateAnimalStatistics();
+                    highlightSelectedAnimal(mapGrid);
+                });
             }
         }
 
+        highlightSelectedAnimal(mapGrid); // Highlight the selected animal if any
 
         int numberOfPlants = simulation.getMap().getPlantsPositions().size();
         Label plantCountLabel = new Label("Number of plants: " + numberOfPlants);
 
-
         int numberOfAnimals = simulation.getAnimals().size();
         Label animalCountLabel = new Label("Number of animals: " + numberOfAnimals);
 
-
-        Set<Vector2d> free = new HashSet<>();
-        free.addAll(simulation.getMap().getPlantsPositions());
-        free.addAll(simulation.getMap().getAnimals().keySet());
-        int numberOfFreeCells = Math.max(0, free.size());
-        Label freeCellCountLabel = new Label("Number of free cells: " + numberOfFreeCells);
+        int numberOfFreeFields = mapHeight * mapWidth - numberOfPlants - numberOfAnimals;
+        Label freeFieldsLabel = new Label("Number of free fields: " + numberOfFreeFields);
 
         int totalEnergy = simulation.getAnimals().stream().mapToInt(Animal::getEnergy).sum();
-        double averageEnergy = numberOfAnimals > 0 ? (int) totalEnergy / numberOfAnimals : 0;
+        double averageEnergy = numberOfAnimals > 0 ? Math.round((double) totalEnergy / numberOfAnimals*100.0)/100.0 : 0;
         Label averageEnergyLabel = new Label("Average energy level: " + averageEnergy);
 
         int totalDeadAge = simulation.getAllDeadAnimals().stream().mapToInt(Animal::getAge).sum();
         int numberOfDeadAnimals = simulation.getAllDeadAnimals().size();
-        double averageDeadAge = numberOfDeadAnimals > 0 ? (int) totalDeadAge / numberOfDeadAnimals : 0;
+        double averageDeadAge = numberOfDeadAnimals > 0 ? Math.round((double) totalDeadAge / numberOfDeadAnimals*100.0)/100.0 : 0;
         Label averageDeadAgeLabel = new Label("Average age of dead animals: " + averageDeadAge);
 
-//        genomeLabel.setText("Genome: " + currentAnimal.getGenType().toString());
-//        energyLabel.setText("Energy: " + currentAnimal.getEnergy());
-//        plantsEatenLabel.setText("Plants eaten: " + currentAnimal.getPlantsEaten());
-//        childrenLabel.setText("Children: " + currentAnimal.getChildren());
-//        ageLabel.setText("Age: " + (currentAnimal.getEnergy() > 0 ? currentAnimal.getAge() : "N/A"));
-
-
         Button stopButton = new Button("Stop");
-        stopButton.setOnAction(e -> simulation.stop());
+        stopButton.setOnAction(e -> {
+            simulation.stop();
+            drawMap();
+            mostPopularGenLabel.setText("Most popular genType: " + simulation.mostPopularGen().toString());
+        });
 
         Button resumeButton = new Button("Resume");
         resumeButton.setOnAction(e -> {
@@ -323,15 +304,23 @@ public class SimulationPresenter extends Application {
             synchronized (simulation) {
                 simulation.notify();
             }
+            new Thread(() -> {
+                while (simulation.running()) {
+                    Platform.runLater(this::updateAnimalStatistics);
+                    try {
+                        Thread.sleep(1000); // Update every second
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }).start();
         });
 
-
-
-        VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeCellCountLabel, averageEnergyLabel, averageDeadAgeLabel);
-        leftStats.setAlignment(Pos.CENTER_LEFT);
+        VBox leftStats = new VBox(10, plantCountLabel, animalCountLabel, freeFieldsLabel, averageEnergyLabel, averageDeadAgeLabel, mostPopularGenLabel);
+        leftStats.setAlignment(Pos.CENTER);
 
         VBox rightStats = new VBox(10, genomeLabel, energyLabel, plantsEatenLabel, childrenLabel, ageLabel, deathDayLabel, stopButton, resumeButton);
-        rightStats.setAlignment(Pos.CENTER_LEFT);
+        rightStats.setAlignment(Pos.CENTER);
 
         HBox statsLayout = new HBox(20, leftStats, rightStats);
         statsLayout.setAlignment(Pos.CENTER);
@@ -339,10 +328,45 @@ public class SimulationPresenter extends Application {
         VBox mainLayout = new VBox(20, mapGrid, statsLayout);
         mainLayout.setAlignment(Pos.CENTER);
 
-
         StackPane root = new StackPane(mainLayout);
-        Scene mapScene = new Scene(root, 1000, 1000);
+        Scene mapScene = new Scene(root);
+
         primaryStage.setScene(mapScene);
+        primaryStage.setWidth(mapGrid.getWidth() + 40);
+        primaryStage.setHeight(mapGrid.getHeight() + 200);
+        primaryStage.sizeToScene();
+    }
+
+    private void resetAnimalColor(Animal animal, GridPane mapGrid) {
+        Vector2d position = animal.getPosition();
+        Rectangle cell = (Rectangle) getNodeByRowColumnIndex(position.getY(), position.getX(), mapGrid);
+        if (cell != null) {
+            if (animal.getAge() == 1) {
+                cell.setFill(Color.BLUE);
+            }
+            else if (animal.getGenType().equals(simulation.mostPopularGen())) {
+                cell.setFill(Color.ORANGE);
+            }
+            else {
+                int maxEnergy = parameters.getInitialEnergy();
+                int energy = Math.max(0, Math.min(animal.getEnergy(), maxEnergy));
+                double intensity = (double) energy / maxEnergy;
+                int redValue = (int) (255 * intensity);
+                Color dynamicColor = Color.rgb(redValue, 0, 0);
+                cell.setFill(dynamicColor);
+            }
+        }
+    }
+
+    private void updateAnimalStatistics() {
+        if (selectedAnimal != null) {
+            genomeLabel.setText("Genome: " + selectedAnimal.getGenType().toString());
+            energyLabel.setText("Energy: " + selectedAnimal.getEnergy());
+            plantsEatenLabel.setText("Plants eaten: " + selectedAnimal.getPlantsEaten());
+            childrenLabel.setText("Children: " + selectedAnimal.getChildren());
+            ageLabel.setText("Age: " + (selectedAnimal.getEnergy() > 0 ? selectedAnimal.getAge() : "N/A"));
+            deathDayLabel.setText("Death day: " + (selectedAnimal.getEnergy() <= 0 ? selectedAnimal.getAge() : "N/A"));
+        }
     }
 
     private Rectangle getNodeByRowColumnIndex(final int row, final int column, GridPane gridPane) {
@@ -350,17 +374,13 @@ public class SimulationPresenter extends Application {
             Integer rowIndex = GridPane.getRowIndex(node);
             Integer columnIndex = GridPane.getColumnIndex(node);
 
-            // Domyślne przypisanie wartości, jeśli indeksy są null
             if (rowIndex == null) rowIndex = 0;
             if (columnIndex == null) columnIndex = 0;
 
-            // Sprawdzamy, czy węzeł znajduje się na danej pozycji
             if (rowIndex == row && columnIndex == column) {
-                // Sprawdzamy, czy węzeł jest typu Rectangle
                 if (node instanceof Rectangle) {
                     return (Rectangle) node;
                 } else {
-                    // Zgłaszamy błąd, jeśli węzeł nie jest Rectangle
                     System.err.println("Node at row " + row + " and column " + column + " is not a Rectangle.");
                 }
             }

@@ -12,7 +12,7 @@ class MapTest {
 
     @BeforeEach
     void setUp() {
-        parameters = new SimulationParameters(10, 10, 20, 10, 5, 2, 3, 1000, 10, 1, 3, "Podmianka", 7, 2, "Round Globe");
+        parameters = new SimulationParameters(10, 10, 20, 10, 5, 2, 3, 1000, 10, 1, 3, "Podmianka", 7, 2, "Round Globe",false);
         map = new Map(parameters);
     }
 
